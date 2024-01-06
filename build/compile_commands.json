@@ -1,0 +1,122 @@
+[
+{
+  "directory": "/home/miguelrodovia/dev/flower/build",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/http/. -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/windowcreator/include -I/home/miguelrodovia/dev/flower/3/frozen/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/flower.dir/source/main.cpp.o -c /home/miguelrodovia/dev/flower/source/main.cpp",
+  "file": "/home/miguelrodovia/dev/flower/source/main.cpp",
+  "output": "CMakeFiles/flower.dir/source/main.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/http/. -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/windowcreator/include -I/home/miguelrodovia/dev/flower/3/frozen/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/flower.dir/source/html.cpp.o -c /home/miguelrodovia/dev/flower/source/html.cpp",
+  "file": "/home/miguelrodovia/dev/flower/source/html.cpp",
+  "output": "CMakeFiles/flower.dir/source/html.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/http/. -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/windowcreator/include -I/home/miguelrodovia/dev/flower/3/frozen/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/flower.dir/source/css/css.cpp.o -c /home/miguelrodovia/dev/flower/source/css/css.cpp",
+  "file": "/home/miguelrodovia/dev/flower/source/css/css.cpp",
+  "output": "CMakeFiles/flower.dir/source/css/css.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/http/. -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/windowcreator/include -I/home/miguelrodovia/dev/flower/3/frozen/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/flower.dir/source/css/css_color.cpp.o -c /home/miguelrodovia/dev/flower/source/css/css_color.cpp",
+  "file": "/home/miguelrodovia/dev/flower/source/css/css_color.cpp",
+  "output": "CMakeFiles/flower.dir/source/css/css_color.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/http/. -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/windowcreator/include -I/home/miguelrodovia/dev/flower/3/frozen/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/flower.dir/source/css/css_selector.cpp.o -c /home/miguelrodovia/dev/flower/source/css/css_selector.cpp",
+  "file": "/home/miguelrodovia/dev/flower/source/css/css_selector.cpp",
+  "output": "CMakeFiles/flower.dir/source/css/css_selector.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/http",
+  "command": "/usr/bin/c++ -DHTTP_WANT_TLS -I/home/miguelrodovia/dev/flower/http/. -g -std=gnu++20 -o CMakeFiles/http.dir/source/url.cpp.o -c /home/miguelrodovia/dev/flower/http/source/url.cpp",
+  "file": "/home/miguelrodovia/dev/flower/http/source/url.cpp",
+  "output": "http/CMakeFiles/http.dir/source/url.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/http",
+  "command": "/usr/bin/c++ -DHTTP_WANT_TLS -I/home/miguelrodovia/dev/flower/http/. -g -std=gnu++20 -o CMakeFiles/http.dir/source/request.cpp.o -c /home/miguelrodovia/dev/flower/http/source/request.cpp",
+  "file": "/home/miguelrodovia/dev/flower/http/source/request.cpp",
+  "output": "http/CMakeFiles/http.dir/source/request.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/http",
+  "command": "/usr/bin/c++ -DHTTP_WANT_TLS -I/home/miguelrodovia/dev/flower/http/. -g -std=gnu++20 -o CMakeFiles/http.dir/source/socket.cpp.o -c /home/miguelrodovia/dev/flower/http/source/socket.cpp",
+  "file": "/home/miguelrodovia/dev/flower/http/source/socket.cpp",
+  "output": "http/CMakeFiles/http.dir/source/socket.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/http",
+  "command": "/usr/bin/c++ -DHTTP_WANT_TLS -I/home/miguelrodovia/dev/flower/http/. -g -std=gnu++20 -o CMakeFiles/http.dir/source/tls.cpp.o -c /home/miguelrodovia/dev/flower/http/source/tls.cpp",
+  "file": "/home/miguelrodovia/dev/flower/http/source/tls.cpp",
+  "output": "http/CMakeFiles/http.dir/source/tls.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/draw",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/draw/../3 -I/home/miguelrodovia/dev/flower/windowcreator/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/draw.dir/source/window.cpp.o -c /home/miguelrodovia/dev/flower/draw/source/window.cpp",
+  "file": "/home/miguelrodovia/dev/flower/draw/source/window.cpp",
+  "output": "draw/CMakeFiles/draw.dir/source/window.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/draw",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/draw/../3 -I/home/miguelrodovia/dev/flower/windowcreator/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/draw.dir/source/text.cpp.o -c /home/miguelrodovia/dev/flower/draw/source/text.cpp",
+  "file": "/home/miguelrodovia/dev/flower/draw/source/text.cpp",
+  "output": "draw/CMakeFiles/draw.dir/source/text.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/draw",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/draw/../3 -I/home/miguelrodovia/dev/flower/windowcreator/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/draw.dir/source/scrollbar.cpp.o -c /home/miguelrodovia/dev/flower/draw/source/scrollbar.cpp",
+  "file": "/home/miguelrodovia/dev/flower/draw/source/scrollbar.cpp",
+  "output": "draw/CMakeFiles/draw.dir/source/scrollbar.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/draw",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/draw/../3 -I/home/miguelrodovia/dev/flower/windowcreator/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/draw.dir/source/layout.cpp.o -c /home/miguelrodovia/dev/flower/draw/source/layout.cpp",
+  "file": "/home/miguelrodovia/dev/flower/draw/source/layout.cpp",
+  "output": "draw/CMakeFiles/draw.dir/source/layout.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/draw",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/draw/../3 -I/home/miguelrodovia/dev/flower/windowcreator/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/draw.dir/source/rectangle.cpp.o -c /home/miguelrodovia/dev/flower/draw/source/rectangle.cpp",
+  "file": "/home/miguelrodovia/dev/flower/draw/source/rectangle.cpp",
+  "output": "draw/CMakeFiles/draw.dir/source/rectangle.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/draw",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/draw/../3 -I/home/miguelrodovia/dev/flower/windowcreator/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/draw.dir/source/navigator.cpp.o -c /home/miguelrodovia/dev/flower/draw/source/navigator.cpp",
+  "file": "/home/miguelrodovia/dev/flower/draw/source/navigator.cpp",
+  "output": "draw/CMakeFiles/draw.dir/source/navigator.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/draw",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/draw/../3 -I/home/miguelrodovia/dev/flower/windowcreator/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/draw.dir/source/paintable/chrome.cpp.o -c /home/miguelrodovia/dev/flower/draw/source/paintable/chrome.cpp",
+  "file": "/home/miguelrodovia/dev/flower/draw/source/paintable/chrome.cpp",
+  "output": "draw/CMakeFiles/draw.dir/source/paintable/chrome.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/draw",
+  "command": "/usr/bin/c++  -I/home/miguelrodovia/dev/flower/draw/. -I/home/miguelrodovia/dev/flower/draw/../source -I/home/miguelrodovia/dev/flower/draw/../http -I/home/miguelrodovia/dev/flower/draw/../3 -I/home/miguelrodovia/dev/flower/windowcreator/include -isystem /usr/include/cairo -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/pixman-1 -g -std=gnu++20 -pthread -o CMakeFiles/draw.dir/source/paintable/address_bar.cpp.o -c /home/miguelrodovia/dev/flower/draw/source/paintable/address_bar.cpp",
+  "file": "/home/miguelrodovia/dev/flower/draw/source/paintable/address_bar.cpp",
+  "output": "draw/CMakeFiles/draw.dir/source/paintable/address_bar.cpp.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/windowcreator",
+  "command": "/usr/bin/cc  -I/home/miguelrodovia/dev/flower/windowcreator/include -g -o CMakeFiles/wc.dir/source/unix/window.c.o -c /home/miguelrodovia/dev/flower/windowcreator/source/unix/window.c",
+  "file": "/home/miguelrodovia/dev/flower/windowcreator/source/unix/window.c",
+  "output": "windowcreator/CMakeFiles/wc.dir/source/unix/window.c.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/windowcreator",
+  "command": "/usr/bin/cc  -I/home/miguelrodovia/dev/flower/windowcreator/include -g -o CMakeFiles/wc.dir/source/unix/init.c.o -c /home/miguelrodovia/dev/flower/windowcreator/source/unix/init.c",
+  "file": "/home/miguelrodovia/dev/flower/windowcreator/source/unix/init.c",
+  "output": "windowcreator/CMakeFiles/wc.dir/source/unix/init.c.o"
+},
+{
+  "directory": "/home/miguelrodovia/dev/flower/build/aux/pangob2d",
+  "command": "/usr/bin/c++ -Dpangob2d_EXPORTS -isystem /usr/include/pango-1.0 -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-4 -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/fribidi -isystem /usr/include/cairo -isystem /usr/include/pixman-1 -g -std=gnu++20 -fPIC -pthread -o CMakeFiles/pangob2d.dir/source/draw.cpp.o -c /home/miguelrodovia/dev/flower/aux/pangob2d/source/draw.cpp",
+  "file": "/home/miguelrodovia/dev/flower/aux/pangob2d/source/draw.cpp",
+  "output": "aux/pangob2d/CMakeFiles/pangob2d.dir/source/draw.cpp.o"
+}
+]

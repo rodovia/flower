@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -g -shared -Wl,-soname,libpangob2d.so -o libpangob2d.so CMakeFiles/pangob2d.dir/source/draw.cpp.o  /usr/lib/libpango-1.0.so /usr/lib/libgobject-2.0.so /usr/lib/libglib-2.0.so /usr/lib/libharfbuzz.so 

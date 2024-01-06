@@ -1,0 +1,1 @@
+/usr/bin/clang -Wall -Wextra -Wno-unused -Werror  -g CMakeFiles/wolfcrypttest.dir/wolfcrypt/test/test.c.o -o wolfcrypt/test/testwolfcrypt  -Wl,-rpath,/home/miguelrodovia/dev/flower/build/http/wolfssl libwolfssl.so.35.5.1 -lm 

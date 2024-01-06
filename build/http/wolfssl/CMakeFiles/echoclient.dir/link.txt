@@ -1,0 +1,1 @@
+/usr/bin/clang -Wall -Wextra -Wno-unused -Werror  -g CMakeFiles/echoclient.dir/examples/echoclient/echoclient.c.o -o examples/echoclient/echoclient  -Wl,-rpath,/home/miguelrodovia/dev/flower/build/http/wolfssl libwolfssl.so.35.5.1 -lm 

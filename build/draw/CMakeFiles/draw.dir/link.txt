@@ -1,0 +1,2 @@
+/usr/bin/ar qc libdraw.a CMakeFiles/draw.dir/source/window.cpp.o CMakeFiles/draw.dir/source/text.cpp.o CMakeFiles/draw.dir/source/scrollbar.cpp.o CMakeFiles/draw.dir/source/layout.cpp.o CMakeFiles/draw.dir/source/rectangle.cpp.o CMakeFiles/draw.dir/source/navigator.cpp.o CMakeFiles/draw.dir/source/paintable/chrome.cpp.o CMakeFiles/draw.dir/source/paintable/address_bar.cpp.o
+/usr/bin/ranlib libdraw.a
