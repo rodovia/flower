@@ -1,2 +1,0 @@
-/usr/bin/ar qc libwc.a CMakeFiles/wc.dir/source/unix/window.c.o CMakeFiles/wc.dir/source/unix/init.c.o
-/usr/bin/ranlib libwc.a
