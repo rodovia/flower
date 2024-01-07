@@ -15,5 +15,5 @@ add_subdirectory(aux/pangob2d)
 
 add_executable(flower source/main.cpp source/html.cpp source/css/css.cpp
                     source/css/css_color.cpp source/css/css_selector.cpp)
-target_link_libraries(flower PUBLIC http draw wc frozen::frozen pangob2d)
+target_link_libraries(flower PUBLIC http draw wc frozen::frozen pangob2d blend2d)
 
