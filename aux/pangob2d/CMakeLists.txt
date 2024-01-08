@@ -3,7 +3,8 @@ project(pangob2d)
 find_package(PkgConfig REQUIRED)
 find_package(Fontconfig REQUIRED)
 pkg_check_modules(Pango REQUIRED pango IMPORTED_TARGET)
-add_library(pangob2d SHARED source/fontmap.c source/fontfamily.c source/font.c)
+add_library(pangob2d SHARED source/fontmap.c source/font_family.c source/font.c
+                            source/font_face.c)
 target_link_libraries(pangob2d PRIVATE PkgConfig::Pango 
                                        blend2d 
                                        Fontconfig::Fontconfig)

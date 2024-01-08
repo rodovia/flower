@@ -48,9 +48,12 @@ PangoFont* pango_b2d_fontmap_load_font(PangoFontMap* fontmap,
 
     if (mask & PANGO_FONT_MASK_SIZE)
     {
-        size_t pred = pango_font_description_get_size(desc);
+        float pred = pango_font_description_get_size(desc);
         if (pango_font_description_get_size_is_absolute(desc))
+        {
             pred /= PANGO_SCALE;
+            pred *= (72.0f / 96.0f);
+        }
         size = pred;
     }
 
@@ -58,7 +61,7 @@ PangoFont* pango_b2d_fontmap_load_font(PangoFontMap* fontmap,
     blFontManagerQueryFace(&map->fontmg, ff, size, &props, &cr);
 
     PangoBlend2DFont* font = g_object_new(pango_b2d_font_get_type(), NULL);
-    _pango_b2d_font_set_face(font, cr);
+    _pango_b2d_font_set_face(font, cr, size);
     return (PangoFont*)font;
 }
 

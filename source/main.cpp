@@ -1,6 +1,7 @@
 #include <cairo.h>
 #include <cstdio>
 #include <pango/pango-font.h>
+#include <pango/pango-fontmap.h>
 #include "css.h"
 #include "css/css_selector.h"
 #include "html.h"
@@ -27,10 +28,11 @@ static void __sortRules(std::vector<css::css_rule>& rules)
 
 int main()
 {
-    auto fm = pango_b2d_fontmap_create();
-    auto desc = pango_font_description_new();
-    pango_font_description_set_family(desc, "DejaVu Serif");
-    auto f = pango_b2d_fontmap_load_font((PangoFontMap*)fm, nullptr, desc);
+    auto fm = (PangoFontMap*)pango_b2d_fontmap_create();
+    auto f = pango_font_map_get_family(fm, "DejaVu Serif");
+    auto ce = pango_font_family_get_face(f, nullptr);
+    auto d = pango_font_face_describe(ce);
+    
 
     http::Initialize();
     std::printf("Olá, mundo!\n");

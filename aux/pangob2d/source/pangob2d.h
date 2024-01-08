@@ -1,6 +1,7 @@
 #pragma once
 
 #include "private_font.h"
+#include "private_font_face.h"
 #include <glib-object.h>
 #include <pango/pango-font.h>
 #include <pango/pango-types.h>
@@ -24,6 +25,11 @@ extern GType pango_b2d_font_family_get_type();
 extern GType pango_b2d_font_get_type();
 typedef struct PangoBlend2DFont PangoBlend2DFont;
 PangoBlend2DFont* pango_b2d_font_new();
+
+
+/* Font face */
+typedef struct PangoBlend2DFontFace PangoBlend2DFontFace;
+
 
 #ifdef __cplusplus
 } /* extern "C" */
