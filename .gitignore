@@ -1,0 +1,5 @@
+build/
+.cache/
+p2.html
+redir.html
+style.css

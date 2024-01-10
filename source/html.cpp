@@ -11,7 +11,8 @@
 
 static constexpr const std::string_view inherited[] = 
 {
-    "color", "font-family", "font-size"
+    "color", "font-family", "font-size", "padding-left",
+    "padding-right", "padding-top", "padding-bottom"
 };
 
 static constexpr const std::string_view selfclosingTags[] = 
@@ -19,6 +20,29 @@ static constexpr const std::string_view selfclosingTags[] =
     "area", "base", "br", "col", "embed", "hr", "img", "input",
     "link", "meta", "param", "source", "track", "wbr",
 };
+
+static std::vector<std::string> SplitString(std::string_view orig, char sep)
+{
+    size_t index = 0;
+    size_t begin = 0;
+    std::vector<std::string> ret;
+    while (index <= orig.size())
+    {
+        if (orig[index] == sep || orig[index] == '\0')
+        {
+            std::string ps = std::string(orig.substr(begin, index));
+            ret.push_back(ps);
+
+            if (orig[index] == '\0') break;
+            index++; /* skip the separator */
+            begin = index;
+        }
+
+        index++;
+    }
+
+    return ret;
+}
 
 std::string_view html::TrimString(std::string_view str, std::string_view whitespace)
 {
@@ -74,6 +98,76 @@ void html::dom_node::CreateStyle(const std::vector<css::css_rule>& rules)
         }
     }
     
+    css::css_map::iterator padding;
+    if ((padding = Style.find("margin")) != Style.end())
+    {
+        auto val = static_cast<const css::css_string&>(*padding->second);
+        auto parts = SplitString(val.String, ' ');
+        switch (parts.size())
+        {
+        /*    If there is only one component value... */
+        case 1:
+        {
+            /* ...it applies to all sides. */
+            Style["margin-left"] = std::make_shared<css::css_string>(parts[0]);
+            Style["margin-right"] = std::make_shared<css::css_string>(parts[0]);
+            Style["margin-top"] = std::make_shared<css::css_string>(parts[0]);
+            Style["margin-bottom"] = std::make_shared<css::css_string>(parts[0]);
+            break;
+        }
+
+        /*    If there are two values... */
+        case 2:
+        {
+            /* 	...the top and bottom padding are set to the first value... */
+            Style["margin-top"] = std::make_shared<css::css_string>(parts[0]);
+            Style["margin-bottom"] = std::make_shared<css::css_string>(parts[0]);
+
+            /*  ...and the right and left padding are set to the second. */
+            Style["margin-right"] = std::make_shared<css::css_string>(parts[1]);
+            Style["margin-left"] = std::make_shared<css::css_string>(parts[1]);
+            break;
+        }
+
+        /* 	If there are three values... */
+        case 3:
+        {
+            /* ...the top is set to the first value... */
+            Style["margin-top"] = std::make_shared<css::css_string>(parts[0]);
+
+            /* ...the left and right are set to the second... */
+            Style["margin-left"] = std::make_shared<css::css_string>(parts[1]);
+            Style["margin-right"] = std::make_shared<css::css_string>(parts[1]);
+            
+            /* 	...and the bottom is set to the third. */
+            Style["margin-bottom"] = std::make_shared<css::css_string>(parts[2]);
+            break;
+        }
+
+        /* 	If there are four values... */
+        case 4:
+        {
+            /* 	...they apply to the top... */
+            Style["margin-top"] = std::make_shared<css::css_string>(parts[0]);
+
+            /* ...right... */
+            Style["margin-right"] = std::make_shared<css::css_string>(parts[1]);
+
+            /* ...bottom... */
+            Style["margin-bottom"] = std::make_shared<css::css_string>(parts[2]);
+
+            /* ...and left, respectively */
+            Style["margin-left"] = std::make_shared<css::css_string>(parts[3]);
+            break;
+        }
+
+        /* If there there are more than 4 or less than 1 value... */
+        default:
+            /* ...the declaration will be ignored. */
+            break;
+        };
+    }
+
     for (auto& ch : Children)
     {
         ch->CreateStyle(rules);

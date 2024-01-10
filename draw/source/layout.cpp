@@ -11,11 +11,13 @@
 #include "text.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <pango/pango-font.h>
 #include <pango/pango-layout.h>
 
-static bool HasCssProp(css::css_map& map, const std::string& prop, css::css_map::iterator& iter)
+static bool HasCssProp(css::css_map& map, const std::string& prop, 
+                       css::css_map::iterator& iter)
 {
     bool has = map.contains(prop);
     iter = has ? map.find(prop) : map.end();
@@ -63,33 +65,6 @@ draw::layout_generic_node::CreateDisplayList()
 {
     css::css_map::iterator bgc;
     std::vector<std::shared_ptr<IDrawable>> cmds;
-    if (HasCssProp(Node->Style, "padding-left", bgc))
-    {
-        auto ref = css::EnsureReferenceUnit(*bgc->second);
-        Position.X -= ref;
-        Position.Width += ref;
-    }
-
-    if (HasCssProp(Node->Style, "padding-right", bgc))
-    {
-        auto ref = css::EnsureReferenceUnit(*bgc->second);
-        Position.Width += ref;
-    }
-
-    if (HasCssProp(Node->Style, "padding-bottom", bgc))
-    {
-        auto ref = css::EnsureReferenceUnit(*bgc->second);
-        Position.Height += ref;
-    }
-
-    if (HasCssProp(Node->Style, "padding-top", bgc))
-    {
-        auto ref = css::EnsureReferenceUnit(*bgc->second);
-        Position.Y -= ref;
-        Position.Height += ref;
-    }
-
-
     if ((bgc = Node->Style.find("background-color")) != Node->Style.end())
     {
         bool scroll = true;
@@ -219,7 +194,7 @@ void draw::layout_block_node::Layout()
         Position.Width = static_cast<int>(ref);
         ForcedWidth = true;
     }
-
+    
     if ((wi = Node->Style.find("height")) != Node->Style.end())
     {
         auto ref = css::EnsureReferenceUnit(*wi->second);
@@ -237,6 +212,8 @@ void draw::layout_block_node::Layout()
     
     if (Previous != nullptr && Previous->LayoutMode != kLayoutModeInline)
     {
+        std::printf("pos y = prev pos y (%i) + prev pos h (%i)\n", Previous->Position.Y,
+                    Previous->Position.Height);
         Position.Y = Previous->Position.Y + Previous->Position.Height;
     }
 
@@ -262,7 +239,6 @@ void draw::layout_block_node::Layout()
     }
     else if (lm == kLayoutModeBlock)
     {
-        std::printf("ForcedWidth=%i\n", ForcedWidth);
         int presumedw = ForcedWidth ? Position.Width : 0;
         for (auto& child : Children)
         {
@@ -279,10 +255,12 @@ void draw::layout_block_node::Layout()
             }
 
             if (!ForcedHeight)
+            {
                 Position.Height += child->Position.Height;
+            }
         }
 
-        Position.Width = presumedw;        
+        Position.Width = presumedw;
     }
 }
 
@@ -316,10 +294,10 @@ void draw::layout_block_node::CreateText(html::dom_text_node* node)
     std::shared_ptr<CTextWriter> dr;
     if (Previous != nullptr)
     {
-        Position.X += Previous->Position.Width;
+        Position.X += Previous->Position.Width;        
     }
 
-    bu.SetRectangle(Position)
+    bu.SetRectangle(Position, !(ForcedWidth || ForcedHeight))
         ->SetText(node->Text);
     bu.Manufacture(dr);
     Position = dr->GetRectangle();

@@ -10,7 +10,6 @@ add_subdirectory(3/frozen)
 add_subdirectory(http)
 add_subdirectory(draw)
 add_subdirectory(windowcreator)
-add_subdirectory(aux/pangob2d)
 
 add_executable(flower source/main.cpp source/html.cpp source/css/css.cpp
                     source/css/css_color.cpp source/css/css_selector.cpp)

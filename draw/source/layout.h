@@ -42,8 +42,38 @@ struct rectangle
 
     __constexpr_or_nothing inline bool InsideRect(unsigned int x, unsigned int y)
     {
-        return std::clamp(x, X, Width) == x
+            return std::clamp(x, X, Width) == x
             && std::clamp(y, Y, Height + Y) == y;
+    }
+    
+    __constexpr_or_nothing inline rectangle operator-(const rectangle& rhs)
+    {
+       rectangle ret = *this;
+       ret.Height -= rhs.Height;
+       ret.Width -= rhs.Width;
+       ret.X -= rhs.X;
+       ret.Y -= rhs.Y;
+       return ret;
+    }
+    
+    __constexpr_or_nothing inline void operator-=(const rectangle& rhs)
+    {
+       *this = operator-(rhs);
+    }
+    
+    __constexpr_or_nothing inline rectangle operator+(const rectangle& rhs)
+    {
+       rectangle ret = *this;
+       ret.Height += rhs.Height;
+       ret.Width += rhs.Width;
+       ret.X += rhs.X;
+       ret.Y += rhs.Y;
+       return ret;
+    }
+    
+    __constexpr_or_nothing inline void operator+=(const rectangle& rhs)
+    {
+       *this = operator+(rhs);
     }
 };
 
