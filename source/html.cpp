@@ -156,7 +156,7 @@ void html::dom_node::CreateStyle(const std::vector<css::css_rule>& rules)
             /* ...bottom... */
             Style["margin-bottom"] = std::make_shared<css::css_string>(parts[2]);
 
-            /* ...and left, respectively */
+            /* ...and left, respectively. */
             Style["margin-left"] = std::make_shared<css::css_string>(parts[3]);
             break;
         }
@@ -298,65 +298,70 @@ std::string_view html::CHTMLParser::SplitAttributes(html::dom_element_node& node
 
     if (tagidx == std::string_view::npos)
     {
+        std::printf("%s\n", text.data());
         return text;
     }
 
-    size_t equidx, fdidx, attribvidx;
-    std::string_view attribname;
-    std::string attribvalue;
-    auto attribs = text.substr(tagidx + 1);
-    while (true)
+    size_t begin = 0,
+           index = 0;
+    std::vector<std::string_view> parts;
+    while (index <= text.size())
     {
-        attribs = TrimString(attribs);
-        equidx = attribs.find('=');
-        attribname = attribs.substr(0, equidx);
-        fdidx = attribs.find(' ', equidx);
-
-        if (equidx == std::string_view::npos)
+        if (text[index] == ' ' 
+         || text[index] == '\0'
+         || (text[index - 1] == '"' 
+             && std::isalpha(text[index])))
         {
-            /* Attribute has no value. */
-            node.Attributes.insert(std::make_pair(attribname, ""));
-            if (fdidx == std::string_view::npos)
-            {
-                break;
-            }
-            
-            attribs = attribs.substr(fdidx);
-
-            continue;
+            parts.push_back(TrimString(text.substr(begin, index - begin)));
+            begin = index;
         }
-        
-        if (attribs[equidx + 1] == '"')
+
+        if (text[index] == '"')
         {
-            /* Attribute's value is quoted. */
-            std::string_view attr = attribs.substr(equidx + 2);
-            for (const char& c : attr)
+            index++;
+            while(text[index] != '"') index++;
+        }
+
+        index++;
+    }
+
+    std::string attribname, attribvalue;
+    for(int i = 1; i < parts.size(); i++)
+    {
+        size_t equal, equalend;
+        auto& p = parts[i];
+        if ((equal = p.find('=')) != std::string_view::npos)
+        {
+            for (int i = 0; i < equal; i++)
             {
-                if (c == '"')
-                {
-                    break;
-                }
+                auto c = p[i];
+                attribname += c;
+            }
+
+            equal++;
+            equalend = p.size();
+            if (p[equal] == '"' || p[equal] == '\'')
+            {
+                equal++;
+                equalend--;
+            }
+
+            for (int i = equal; i < equalend; i++)
+            {
+                auto c = p[i];
                 attribvalue += c;
             }
-
-            node.Attributes.insert(std::make_pair(attribname, attribvalue));
+        }
+        else {
+            attribname = p;
         }
 
-        /* Attribute's value is not quoted
-           TODO: add sanity checks if invalid chars
-           are found. The parser may be confused. */
-        // attribvalue = attribs.substr(equidx, fdidx - equidx);
-
-        if (fdidx == std::string_view::npos)
-        {
-            break;
-        }
-
-        attribs = attribs.substr(fdidx);
+        node.Attributes.emplace(attribname, attribvalue);
+        attribname.clear(); 
         attribvalue.clear();
     }
 
-    return (tagidx == std::string_view::npos) ? text : text.substr(0, tagidx);
+    return parts[0];
 }
 
 std::shared_ptr<html::dom_node> 
