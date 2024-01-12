@@ -1,7 +1,13 @@
+/* Default stylesheet for HTML files. */ 
+
 html, body {
     background-color: white;
     color: black;
     font-family: serif;
+}
+
+a {
+    color: brown;
 }
 
 pre {
@@ -54,3 +60,5 @@ h6 {
 small {
     font-size: 8pt;
 }
+
+

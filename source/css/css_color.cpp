@@ -142,7 +142,7 @@ websafeColors =
     { "pink", { 255, 192, 203 } },
     { "plum", { 221, 160, 221 } },
     { "powderblue", { 176, 223, 230 } },
-    { "purple", { 128, 0, 128 } },
+    { "rebeccapurple", { 102, 51, 153 } }, /* Defined in CSS Color Level 4, 6.1 "Named Colors" */
     { "rosybrown", { 188, 143, 143 } },
     { "royalblue", { 65, 105, 225 } },
     { "saddlebrown", { 139, 69, 19 } },

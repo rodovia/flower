@@ -166,6 +166,25 @@ void css::CCascadingParser::HandleWhitespace()
     {
         m_Index++;
     }
+    this->HandleComment();
+}
+
+void css::CCascadingParser::HandleComment()
+{
+    if (m_Input[m_Index + 1] == '*' 
+     && m_Input[m_Index] == '/')
+    {
+        m_Index += 2;
+        while (m_Index < m_Input.size() 
+            && (m_Input[m_Index + 1] != '/' 
+             && m_Input[m_Index] != '*')) m_Index++;
+        m_Index += 2;
+    }
+
+    if (std::isspace(m_Input[m_Index]))
+    {
+        this->HandleWhitespace();
+    }
 }
 
 std::string css::CCascadingParser::HandleName(bool allowSpaces)
@@ -190,15 +209,16 @@ std::string css::CCascadingParser::HandleName(bool allowSpaces)
     return st;
 }
 
-void css::CCascadingParser::ExpectLiteral(char lt)
+bool css::CCascadingParser::ExpectLiteral(char lt)
 {
     if ((m_Index < m_Input.size()) && (m_Input[m_Index] != lt))
     {
         std::printf("Unexpected literal %c, expected %c\n", m_Input[m_Index], lt);
-        return;
+        return false;
     }
 
     m_Index++;
+    return true;
 }
 
 css::css_map css::CCascadingParser::ParseProperties()
@@ -266,7 +286,13 @@ css::css_kv css::CCascadingParser::HandlePair()
     this->HandleWhitespace();
     name = std::string(this->HandleName());
     this->HandleWhitespace();
-    this->ExpectLiteral(':');
+    bool exp = this->ExpectLiteral(':');
+    if (!exp)
+    {
+        value = "";
+        return std::make_pair(name, std::make_shared<css_string>(value));
+    }
+
     this->HandleWhitespace();
     value = this->HandleName(true);
 
@@ -322,6 +348,12 @@ css::CCascadingParser::ParseBody()
     while (m_Index < m_Input.size())
     {
         this->HandleWhitespace();
+        if (m_Input[m_Index] == '@')
+        {
+            this->HandleAtRule();
+            continue;
+        }
+
         selectors = this->HandleSelector();
         this->ExpectLiteral('{');
         mp = this->ParseProperties();
@@ -347,4 +379,39 @@ css::CreateSelectorFor(std::string_view selector)
     }
 
     return std::make_shared<css::tag_selector>(std::string(selector));
+}
+
+void css::CCascadingParser::HandleAtRule()
+{
+    if (!this->ExpectLiteral('@'))
+    {
+        std::printf("HandleAtRule called but current char is not at!\n");
+        return;
+    }
+
+    size_t begin = m_Index++;
+    while(m_Index < m_Input.size() && m_Input[m_Index] != ' ') m_Index++;
+    
+    std::string rulename = m_Input.substr(begin, m_Index - begin);
+    if (rulename == "media")
+    {
+        int level = 1;
+        while(m_Index < m_Input.size() && m_Input[m_Index] != '{') m_Index++;
+        while(m_Index < m_Input.size() && (m_Input[m_Index] != '}' && level > 0))
+        {
+            if (m_Input[m_Index] == '{')
+            {
+                level++;
+            }
+
+            if (m_Input[m_Index] == '}')
+            {
+                level--;
+                if (level == 1)
+                    level = 0;
+            }
+
+            m_Index++;
+        }
+    }
 }

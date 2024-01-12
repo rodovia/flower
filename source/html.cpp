@@ -2,6 +2,7 @@
 #include "html_node.h"
 #include "css.h"
 #include "source/request.h"
+#include "source/url.h"
 #include <assert.h>
 
 #include <algorithm>
@@ -395,6 +396,12 @@ void html::CHTMLParser::HandleSpecialElement(const dom_element_node& node)
 {
     if (node.Tag == "style")
     {
+        if (node.Children.size() < 1)
+        {
+            std::printf("Style tag with no children\n");
+            return;
+        }
+
         dom_text_node& nd = static_cast<dom_text_node&>(*node.Children[0]);
         css::CCascadingParser casc(nd.Text);
         m_StyleRules = casc.ParseBody();
@@ -407,20 +414,8 @@ void html::CHTMLParser::HandleSpecialElement(const dom_element_node& node)
         {
             std::string href;
             http::url url;
-
             GetAttribValue(node.Attributes, "href", href);
-            url = m_BaseUrl;
-            if (href[0] != '/' 
-             && href.find("://") == std::string::npos)
-            {
-                href.insert(0, "/");
-            }
-
-            url.Path = href;
-            if (href.starts_with("http"))
-            {
-                url = href;
-            }
+            url = m_BaseUrl.HandleRelative(href);
 
             http::CRequestClient client(url);
             auto response = client.Perform();
@@ -444,5 +439,6 @@ void html::CHTMLParser::HandleSpecialElement(const dom_element_node& node)
 
 std::string html::CHTMLParser::GetTitle() const
 {
+    std::printf("m_Title=%s\n", m_Title.c_str());
     return m_Title;
 }

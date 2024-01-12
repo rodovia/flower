@@ -4,6 +4,7 @@
 #pragma once 
 
 #include "drawable.h"
+#include "source/layout.h"
 #include "source/paintable/chrome.h"
 #include "source/paintable/address_bar.h"
 #include <cairo.h>
@@ -15,12 +16,15 @@ namespace navigator
 
 struct document
 {
-    document(http::url url);
+    document(http::url url, CNavigator* navigator);
     void Paint(const draw::PainterState&);
+    void HandleClick(int x, int y);
 
     http::url Url;
     std::string Title;
     std::vector<std::shared_ptr<draw::IDrawable>> DisplayList;
+    std::shared_ptr<draw::layout_generic_node> LayoutRoot;
+    CNavigator* Navigator;
 };
 
 class CNavigator

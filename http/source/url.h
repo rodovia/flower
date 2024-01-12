@@ -14,6 +14,8 @@ struct url
 
     url() = default;
     url(std::string nonparsed);
+
+    http::url HandleRelative(std::string_view relative);
 };
 
 }

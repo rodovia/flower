@@ -12,6 +12,9 @@
 #include <string_view>
 #include <string>
 
+#define IntoElement(E) static_cast<html::dom_element_node&>(E)
+#define IntoText(E) static_cast<html::dom_text_node&>(E)
+
 #ifndef __FLOWER_HTML_H
 #define __FLOWER_HTML_H
 

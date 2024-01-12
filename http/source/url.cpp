@@ -40,3 +40,22 @@ http::url::url(std::string ur)
         Path = Path.substr(hostpos);
     }
 }
+
+http::url http::url::HandleRelative(std::string_view href)
+{
+    std::string link = std::string(href);
+    http::url url = *this;
+    if (href[0] != '/' 
+     && href.find("://") == std::string::npos)
+    {
+        link.insert(0, "/");
+    }
+
+    url.Path = link;
+    if (link.starts_with("http"))
+    {
+        url = http::url(link);
+    }
+
+    return url;
+}

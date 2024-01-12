@@ -292,9 +292,17 @@ void draw::layout_block_node::CreateText(html::dom_text_node* node)
     bu.SetFont(desc);
 
     std::shared_ptr<CTextWriter> dr;
-    if (Previous != nullptr)
+    if (Parent->Previous != nullptr 
+     && Parent->Previous->LayoutMode == kLayoutModeInline)
     {
-        Position.X += Previous->Position.Width;        
+        Position.X += Parent->Previous->Position.Width + Parent->Previous->Position.X;        
+    }
+
+    if (Previous != nullptr
+     && Previous->LayoutMode == kLayoutModeInline)
+    {
+        std::printf("prev wid %i\n", Previous->Position.Width);
+        Position.X += Previous->Position.Width + Previous->Position.X; 
     }
 
     bu.SetRectangle(Position, !(ForcedWidth || ForcedHeight))
