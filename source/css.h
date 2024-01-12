@@ -14,6 +14,7 @@
 
 #include "css/css_selector.h"
 #include "css/css_color.h"
+#include "flower_http.h"
 
 /* Workaround GCC bug 98752 (wrong error when consteval ctor).
   Seems to be fixed in GCC 14 (TODO: verify) */
@@ -104,7 +105,7 @@ std::shared_ptr<basic_selector> CreateSelectorFor(std::string_view selector);
 class CCascadingParser
 {
 public:
-    CCascadingParser(std::string input);
+    CCascadingParser(std::string input, http::url base);
     std::vector<css_rule> ParseBody();
     css_map ParseProperties();
 
@@ -119,6 +120,7 @@ private:
     std::string_view HandleValue();
     selector_collection HandleSelector();
     
+    http::url m_Base;
     std::string m_Input;
     uint32_t m_Index;
 };

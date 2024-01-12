@@ -17,6 +17,7 @@
 #include "css/css_units.h"
 #include "html.h"
 #include "html_node.h"
+#include "source/request.h"
 
 static constinit frozen::unordered_map<frozen::string, int, 7> valuetype = {
     { "cm", css::kCssDistanceUnitCentimeter },
@@ -153,9 +154,10 @@ float css::EnsureReferenceUnit(const css_basic_value &bv)
     return ref * numb;
 }
 
-css::CCascadingParser::CCascadingParser(std::string input)
+css::CCascadingParser::CCascadingParser(std::string input, http::url base)
     : m_Index(0),
-      m_Input(input)
+      m_Input(input),
+      m_Base(base)
 {
 
 }
@@ -412,6 +414,32 @@ void css::CCascadingParser::HandleAtRule()
             }
 
             m_Index++;
+        }
+    }
+    else if (rulename == "import")
+    {
+        this->HandleWhitespace();
+        begin = m_Index++;
+
+        while(m_Index < m_Input.size() && m_Input[m_Index] != '"') 
+            m_Index++;
+
+        std::string check = m_Input.substr(begin, m_Index - begin);
+        if (check == "url(")
+            begin += 5;
+
+        m_Index++;
+        while(m_Index < m_Input.size() && m_Input[m_Index] != '"') 
+            m_Index++;
+
+        check = m_Input.substr(begin, m_Index - begin);
+        auto url = m_Base.HandleRelative(check);
+
+        http::CRequestClient cl(url);
+        auto res = cl.Perform();
+        if (res.StatusCode == 200)
+        {
+            m_Input.insert(m_Index, res.Body);
         }
     }
 }

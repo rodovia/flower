@@ -16,7 +16,7 @@ static std::vector<css::css_rule> GetBuiltinRules()
     http::CRequestClient req(f);
     auto resp = req.Perform();
 
-    css::CCascadingParser cpar(resp.Body);
+    css::CCascadingParser cpar(resp.Body, f);
     return cpar.ParseBody();
 }
 

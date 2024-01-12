@@ -90,7 +90,7 @@ void html::dom_node::CreateStyle(const std::vector<css::css_rule>& rules)
         auto& elem = static_cast<dom_element_node&>(*this);
         if ((style = elem.Attributes.find("style")) != elem.Attributes.end())
         {
-            css::CCascadingParser cp(style->second);
+            css::CCascadingParser cp(style->second, {});
             auto parsed = cp.ParseProperties();
             for (auto& prop : parsed)
             {
@@ -264,7 +264,7 @@ void html::CHTMLParser::AddTag(std::string tag)
     
     if ((style = elem->Attributes.find("style")) != elem->Attributes.end())
     {
-        css::CCascadingParser cp(style->second);
+        css::CCascadingParser cp(style->second, m_BaseUrl);
         auto parsed = cp.ParseProperties();
         for (auto& prop : parsed)
         {
@@ -403,7 +403,7 @@ void html::CHTMLParser::HandleSpecialElement(const dom_element_node& node)
         }
 
         dom_text_node& nd = static_cast<dom_text_node&>(*node.Children[0]);
-        css::CCascadingParser casc(nd.Text);
+        css::CCascadingParser casc(nd.Text, m_BaseUrl);
         m_StyleRules = casc.ParseBody();
     }
     else if (node.Tag == "link")
@@ -421,7 +421,7 @@ void html::CHTMLParser::HandleSpecialElement(const dom_element_node& node)
             auto response = client.Perform();
             if (response.StatusCode == 200)
             {
-                css::CCascadingParser parser(response.Body);
+                css::CCascadingParser parser(response.Body, url);
                 auto bdy = parser.ParseBody();
                 for (auto& rule : bdy)
                 {
