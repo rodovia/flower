@@ -2,6 +2,7 @@
 #include "html_node.h"
 #include "css.h"
 #include "source/request.h"
+#include "source/session_manager.h"
 #include "source/url.h"
 #include <assert.h>
 
@@ -417,11 +418,10 @@ void html::CHTMLParser::HandleSpecialElement(const dom_element_node& node)
             GetAttribValue(node.Attributes, "href", href);
             url = m_BaseUrl.HandleRelative(href);
 
-            http::CRequestClient client(url);
-            auto response = client.Perform();
-            if (response.StatusCode == 200)
+            auto response = http::Fetch(url).GetLeft();
+            if (response->StatusCode == 200)
             {
-                css::CCascadingParser parser(response.Body, url);
+                css::CCascadingParser parser(response->Body, url);
                 auto bdy = parser.ParseBody();
                 for (auto& rule : bdy)
                 {

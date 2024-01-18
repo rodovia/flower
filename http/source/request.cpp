@@ -1,4 +1,5 @@
 #include "request.h"
+#include "source/session.h"
 #include "source/socket.h"
 #include "url.h"
 
@@ -60,29 +61,34 @@ http::response http::CRequestClient::Perform() noexcept
     }
 
     response re = this->HandleResponse(m_Response.data());
+    std::printf("re.StatusCode = %i\n", re.StatusCode);
     if (re.StatusCode == 301)
     {
         if (m_RedirectionLevel > 5)
         {
             return this->ReadFile("../redir.html");
         }
-
-        auto loc = *std::find_if(re.Headers.begin(), re.Headers.end(), [](header_ent& ent)
-                                {
-                                    return ent.first == "Location";
-                                });
-        m_RedirectionLevel++;
-        
-        CRequestClient client(*this);
-        client.SetUrl(loc.second);
-        auto cl = client.Perform();
-        return cl;
+/*
+        if (re.Headers.contains("Location"))
+        {
+            auto loc = re.Headers.at("Location");
+            m_RedirectionLevel++;
+            
+            CRequestClient client(*this);
+            this->SetUrl(m_Url.HandleRelative(loc));
+            std::printf("redir to %s://%s\n", m_Url.Scheme.c_str(), m_Url.Host.c_str());
+            m_Response.clear();
+            auto cl = this->Perform();
+            return cl;
+        }
+*/
     }
 
     return re;
 }
 
-std::unique_ptr<http::ISocket> http::CRequestClient::GetSocketForHost() noexcept
+std::unique_ptr<http::ISocket> 
+http::CRequestClient::GetSocketForHost() noexcept
 {
     addrinfo* info;
     addrinfo* link;
@@ -146,9 +152,11 @@ http::response http::CRequestClient::HandleResponse(std::string_view buffer) noe
     auto scdata = buffer.substr(9);
     std::from_chars(scdata.data(), scdata.data() + 3, statuscode);
 
-    auto headerbegin = buffer.substr(buffer.find_first_of("\r\n") + 2);
+    size_t headeridx = buffer.find_first_of("\r\n") + 2;
+    auto headerbegin = buffer.substr(headeridx);
     size_t headerSize = this->HandleHeaders(buffer, resp);
-    resp.Body = headerbegin.substr(headerSize, buffer.size() - headerSize);
+    resp.Body = m_Response.substr(headerSize + headeridx, m_Response.size() - (headerSize + headeridx));
+
     resp.StatusCode = statuscode;
     return resp;
 }
@@ -167,29 +175,56 @@ size_t http::CRequestClient::HandleHeaders(std::string_view buffer,
                                          http::response& rp) noexcept
 {
     auto headerbegin = buffer.substr(buffer.find_first_of("\r\n") + 2);
-    auto headerstr = std::istringstream(std::string(headerbegin));
+    bool lookingForKey = true;
+    size_t index = 0, begin = 0;
+    size_t sequentialCrlfs = 0;
+    std::string hdname, hdval;
 
-    size_t index;
-    size_t headerLength = 4; /* the final CRLF CRLF */
-    std::string line, hname, value;
-    while (std::getline(headerstr, line) && line != "\r")
+    while(index < headerbegin.size())
     {
-        index = line.find(':');
-        hname = line.substr(0, index);
-        value = line.substr(index + 2);
-        value.pop_back(); /* value has a leading CR */
+        if (headerbegin[index] == ':' && lookingForKey)
+        {
+            sequentialCrlfs = 0;
+            hdname.clear();
+            if (headerbegin[begin] == '\n') 
+                begin++;
 
-        headerLength += line.size();
-        rp.Headers.emplace_back(hname, value);
+            hdname = headerbegin.substr(begin, index - begin);
+            begin = index + 2; /* skip the ": " part  */
+            lookingForKey = false;
+        }
+
+        if (headerbegin[index] == '\n' && !lookingForKey)
+        {
+            if (sequentialCrlfs > 1)
+            {
+                break;
+            }
+
+            hdval.clear();
+            hdval = headerbegin.substr(begin, index - begin - 1);
+            begin = index;
+            rp.Headers.emplace(hdname, hdval);
+
+            lookingForKey = true;
+            sequentialCrlfs++;
+        }
+
+        index++;
     }
-    
-    headerLength = headerbegin.find_first_of("\r\n\r\n", headerLength) + 4;
 
-    return headerLength;
+    for (auto& h : rp.Headers)
+    {
+        std::printf("h.name = %s, h.val = %s\n", h.first.c_str(), h.second.c_str());
+    }
+
+    return index;
 }
 
 http::response http::CRequestClient::ReadFile(std::string_view filename)
 {
+    using namespace std::string_literals;
+
     char* bd;
     int readb;
     size_t fileSize;
@@ -203,7 +238,11 @@ http::response http::CRequestClient::ReadFile(std::string_view filename)
         if (errno == ENOENT)
         {
             std::printf("Request to read file %s failed: ENOENT\n", filename.data());
-            return http::response { 404, { }, "" };
+            http::response rep;
+            rep.StatusCode = 404;
+            rep.Body = "";
+            rep.Headers = {};
+            return rep;
         }
     }
 
@@ -225,10 +264,8 @@ http::response http::CRequestClient::ReadFile(std::string_view filename)
     delete[] bd;
     fclose(fi);
     std::to_chars(files.data(), files.data() + files.capacity(), fileSize);
-    return {
-        200, {
-            std::make_pair("Content-Length", files)
-        },
-        body
-    };
+    http::response rep;
+    rep.Body = body;
+    rep.StatusCode = 200;
+    return rep;
 }

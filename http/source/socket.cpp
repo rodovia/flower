@@ -66,9 +66,9 @@ int http::CEncryptedSocket::Read(void* buffer, size_t size)
         value = gnutls_record_recv(m_Session, buffer, size);
     } while(value == GNUTLS_E_AGAIN || value == GNUTLS_E_INTERRUPTED);
     
-    if (value < 0)
+    if (value < 0 && value != GNUTLS_E_PREMATURE_TERMINATION)
     {
-        if (gnutls_error_is_fatal(value))
+        if (!gnutls_error_is_fatal(value))
         {
             printf("*** GnuTLS Warning: ");
         }

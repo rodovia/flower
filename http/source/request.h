@@ -4,6 +4,7 @@
 #include "url.h"
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -16,8 +17,34 @@ using header_ent = std::pair<std::string, std::string>;
 struct response
 {
     uint16_t StatusCode;
-    std::vector<header_ent> Headers;
+    std::multimap<std::string, std::string> Headers;
     std::string Body;
+
+    inline response() = default;
+    inline response(const response& rhs)
+    {
+        StatusCode = rhs.StatusCode;
+        Headers.clear();
+        Headers = rhs.Headers;
+        Body = rhs.Body;
+    }
+
+    inline response& operator=(const response& rhs)
+    {
+        StatusCode = rhs.StatusCode;
+        Headers = rhs.Headers;
+        Body = rhs.Body;
+        return *this;
+    }
+
+    inline response& operator=(response&& rhs)
+    {
+        std::swap(rhs.StatusCode, StatusCode);
+        std::swap(rhs.Headers, Headers);
+        std::swap(rhs.Body, Body);
+        return *this;
+    }
+
 };
 
 class CRequestClient
@@ -37,7 +64,7 @@ private:
     url m_Url;
     int m_RedirectionLevel;
     std::vector<header_ent> m_Headers;
-    std::vector<char> m_Response;
+    std::string m_Response;
 };
 
 }

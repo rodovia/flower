@@ -8,15 +8,16 @@
 #include "source/layout.h"
 #include "source/paintable/chrome.h"
 #include "source/request.h"
+#include "source/session_manager.h"
+#include <optional>
 #include <vector>
 
 static std::vector<css::css_rule> GetBuiltinRules()
 {
     auto f = http::url("file:///home/miguelrodovia/dev/flower/html.css");
-    http::CRequestClient req(f);
-    auto resp = req.Perform();
+    auto resp = http::Fetch(f).GetLeft();
 
-    css::CCascadingParser cpar(resp.Body, f);
+    css::CCascadingParser cpar(resp->Body, f);
     return cpar.ParseBody();
 }
 
@@ -39,9 +40,8 @@ navigator::document::document(http::url uri, CNavigator* navigator)
 {
     std::vector<css::css_rule> rules = GetBuiltinRules();
 
-    auto request = http::CRequestClient(Url);
-    auto response = request.Perform();
-    auto ps = html::CHTMLParser(response.Body, Url);
+    auto response = http::Fetch(uri).GetLeft();
+    auto ps = html::CHTMLParser(response->Body, Url);
     auto dom = ps.Parse();
     Title = ps.GetTitle();
     ps.GetStyleSheetRules(rules);
