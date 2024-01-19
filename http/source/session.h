@@ -37,6 +37,7 @@ public:
                                          header_map headers = {});
     void SetUserAgent(std::string ua);
 private:
+    bool UpgradeSocket(std::string_view newScheme);
     void ReadChunked(std::string_view bodyRemainder);
     void PerformRequestInner(const request_entry&);
     static void* RequestThreadThunk(void*);

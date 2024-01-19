@@ -88,7 +88,7 @@ http::CHttpSession::PerformRequest(std::string path,
 {
     headers.emplace("Host", m_Host);
     headers.emplace("Connection" , "keep-alive");
-    headers.emplace("User-Agent", "FlowerIsBetter/0.1");
+    headers.emplace("User-Agent", "Mozilla/5.0 (Linux) FlowerIsBetter! (0.1)");
 
     if (m_RequestThread == 0)
     {
@@ -166,6 +166,7 @@ void http::CHttpSession::PerformRequestInner(const http::request_entry& req)
     using namespace std::string_literals;
 
     auto heading = http::CreateHeadingWith(kHttpVersion11, req.Path, req.Headers);
+    std::printf("heading=%s\n", heading.c_str());
     m_Socket->Write(heading.data(), heading.size());
 
     int status;
@@ -176,7 +177,7 @@ void http::CHttpSession::PerformRequestInner(const http::request_entry& req)
         rlength = response.size();
         response.resize(rlength + 1024);
         rlength = m_Socket->Read(&response[rlength], 1024);
-        if (rlength <= 0) break;
+        if (rlength < 1024) break;
     }
 
     response.shrink_to_fit();
@@ -185,16 +186,35 @@ void http::CHttpSession::PerformRequestInner(const http::request_entry& req)
     int headersize = http::ParserHeadersStatus(response, rep, status);
     std::string body = response.substr(headersize);
 
-    if (rep.contains("Transfer-Encoding") 
-     && GetValue(rep, "Transfer-Encoding"s) == "chunked")
+    if (status == 301 || status == 302)
+    {
+        auto loc = rep.find("location")->second;
+        http::url url(loc);
+        m_Host = url.Host;
+        if (!this->UpgradeSocket(loc))
+        {
+            /* Trigger a negative result to the future */
+        }
+
+        request_entry rent;
+        rent.Headers = req.Headers;
+        rent.Path = url.Path;
+        rent.Headers.erase("Host");
+        rent.Headers.emplace("Host"s, m_Host);
+
+        return this->PerformRequestInner(rent);
+    }
+
+    if (rep.contains("transfer-encoding") 
+     && GetValue(rep, "transfer-encoding"s) == "chunked")
     {
         /* Because... TCP, a chunk can sneak inside 
            response buffer. */
         this->ReadChunked(body);
     }
 
-    if (rep.contains("Connection")
-     && GetValue(rep, "Connection"s) == "close")
+    if (rep.contains("connection")
+     && GetValue(rep, "connection"s) == "close")
     {
         m_Socket.reset(); /* BUG: the socket will not be recreated 
                                   at the next request. */
@@ -204,6 +224,7 @@ void http::CHttpSession::PerformRequestInner(const http::request_entry& req)
     resp.StatusCode = status;
     resp.Body = body;
     resp.Headers = std::move(rep);
+    std::printf("Statuscode=%i\n", status);
     m_Future.SetPositiveResult(resp);
 }
 
@@ -219,7 +240,26 @@ void http::CHttpSession::ReadChunked(std::string_view bodyRemainder)
         rlength = rawresp.size();
         rawresp.resize(rlength + 1024);
         rlength = m_Socket->Read(&rawresp[rlength], 1024);
+
         int length = http::ReadChunkedContent(&rawresp[rlength], body);
         if (length == 0 || rlength <= 0) break;
     }
+}
+
+bool http::CHttpSession::UpgradeSocket(std::string_view newScheme)
+{
+    if (m_Scheme == "https" && newScheme == "http")
+    {
+        std::printf("HTTP downgrade\n");
+        return false; /* HTTP downgrade */
+    }
+
+    http::url url;
+    url.Scheme = m_Scheme;
+    url.Host = m_Host;
+    url = url.HandleRelative(newScheme);
+
+    m_Socket.reset();
+    m_Socket = GetSocketForHost(url);
+    return true;
 }

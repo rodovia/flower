@@ -4,6 +4,15 @@
 #pragma once
 
 #include "css.h"
+#include "html_node.h"
+#include <cfloat>
+
+namespace html
+{
+
+struct dom_element_node;
+
+}
 
 namespace css
 {
@@ -41,6 +50,24 @@ constexpr float GetValueInReferenceUnits(css_distance_units Du)
     return 1;
 }
 
-float EnsureReferenceUnit(const css_basic_value& bv);
+struct css_relative_units_base
+{
+    css_relative_units_base()
+        : FontSize(FLT_MIN),
+          CharacterAdvance(FLT_MIN),
+          PercentageReference(0)
+    {}
+
+    float FontSize; /* for 'em' */
+    float CharacterAdvance; /* for 'ch' and 'ic' */
+
+    double PercentageReference; /* what '%' refers to. */
+};
+
+float EnsureReferenceUnit(const css_basic_value& bv, 
+                          css_relative_units_base& base, 
+                          std::shared_ptr<html::dom_node> node);
+void HandleRelativeUnit(css_relative_units_base& base, 
+                        std::shared_ptr<html::dom_node> node);
 
 }

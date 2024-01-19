@@ -23,7 +23,14 @@ static constexpr const std::string_view selfclosingTags[] =
     "link", "meta", "param", "source", "track", "wbr",
 };
 
-static std::vector<std::string> SplitString(std::string_view orig, char sep)
+static constexpr const std::string_view metatags[] = 
+{
+    "base", "basefont", "bgsound", "noscript",
+    "link", "meta", "title", "style", "script",
+};
+
+static std::vector<std::string> 
+SplitString(std::string_view orig, char sep)
 {
     size_t index = 0;
     size_t begin = 0;
@@ -32,7 +39,7 @@ static std::vector<std::string> SplitString(std::string_view orig, char sep)
     {
         if (orig[index] == sep || orig[index] == '\0')
         {
-            std::string ps = std::string(orig.substr(begin, index));
+            std::string ps = std::string(orig.substr(begin, index - begin));
             ret.push_back(ps);
 
             if (orig[index] == '\0') break;
@@ -186,18 +193,15 @@ html::CHTMLParser::CHTMLParser(std::string input, http::url base)
 std::shared_ptr<html::dom_node> html::CHTMLParser::Parse()
 {
     std::string text;
-    bool inAngle = false;
     for (const auto& c : m_Input)
     {
         if (c == '<')
         {
-            inAngle = true;
             if (!text.empty())
                 this->AddText(std::move(text));
         }
         else if (c == '>')
         {
-            inAngle = false;
             this->AddTag(std::move(text));
             text.clear();
         }
@@ -216,6 +220,7 @@ void html::CHTMLParser::AddText(std::string text)
     if (text.find_first_not_of(' ') == std::string::npos)
         return;
     
+    this->HandleImplicitTags("");
     text = TrimString(text);
     if (text.empty()) return;
 
@@ -242,7 +247,8 @@ void html::CHTMLParser::AddTag(std::string tag)
         parent->Children.push_back(finished);
         return;
     }
-    
+
+    this->HandleImplicitTags(tag);    
     if (tag[0] == '!' || tag == "--") // Ignore DOCTYPE, comment begin
     {                                 //   and comment end
         return;
@@ -439,6 +445,19 @@ void html::CHTMLParser::HandleSpecialElement(const dom_element_node& node)
 
 std::string html::CHTMLParser::GetTitle() const
 {
-    std::printf("m_Title=%s\n", m_Title.c_str());
     return m_Title;
+}
+
+void html::CHTMLParser::HandleImplicitTags(std::string_view tag)
+{
+    if (tag.starts_with('!') || tag.starts_with("--"))
+    {
+        return;
+    }
+
+    if (m_Unfinished.empty() && tag != "html")
+    {
+        auto node = std::make_shared<dom_element_node>("html");
+        m_Unfinished.push_back(node);
+    }
 }

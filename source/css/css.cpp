@@ -18,6 +18,7 @@
 #include "html.h"
 #include "html_node.h"
 #include "source/request.h"
+#include "source/session_manager.h"
 
 static constinit frozen::unordered_map<frozen::string, int, 7> valuetype = {
     { "cm", css::kCssDistanceUnitCentimeter },
@@ -103,6 +104,10 @@ bool css::GetFontForValue(const css_basic_value& bv, PangoFontFamily*& faml)
             {
                 fontname = "DejaVu Serif";
             }
+            else if (fontname == "sans-serif")
+            {
+                fontname = "IBM Plex Sans";
+            }
 
             auto ff = pango_font_map_get_family(fm, fontname.c_str());
             if (ff != nullptr)
@@ -120,7 +125,9 @@ bool css::GetFontForValue(const css_basic_value& bv, PangoFontFamily*& faml)
     return false;
 }
 
-float css::EnsureReferenceUnit(const css_basic_value &bv)
+float css::EnsureReferenceUnit(const css_basic_value &bv,
+                               css_relative_units_base& base, 
+                               std::shared_ptr<html::dom_node> node)
 {
     if (bv.Type != kCssValueTypeKeywordOrString)
     {
@@ -147,11 +154,41 @@ float css::EnsureReferenceUnit(const css_basic_value &bv)
     auto number = string.substr(0, index);
     auto unstr = string.substr(index);
     auto unit = std::string_view(unstr);
+    if (unit == "auto")
+    {
+        return 0;
+    }
+
+    std::from_chars(number.data(), number.data() + number.size(), numb);
+
+    if (unit == "em" 
+     || unit == "%")
+    {
+        HandleRelativeUnit(base, node);
+        if (unit == "em")
+            return base.FontSize * numb;
+        if (unit == "%")
+            return base.PercentageReference * (numb / 100);
+    }
+
+    if (unit.empty()) return numb;
 
     auto val = valuetype.at(unit);
     auto ref = GetValueInReferenceUnits((css_distance_units)val);
-    std::from_chars(number.data(), number.data() + number.size(), numb);
     return ref * numb;
+}
+
+void css::HandleRelativeUnit(css_relative_units_base& base, 
+                              std::shared_ptr<html::dom_node> node)
+{
+    if (base.FontSize == FLT_MIN)
+    {
+        if (node->Parent == nullptr)
+            base.FontSize = 12.0f;
+        else 
+            base.FontSize = EnsureReferenceUnit(*node->Parent->Style.at("font-size"),
+                                                base, node->Parent);
+    }
 }
 
 css::CCascadingParser::CCascadingParser(std::string input, http::url base)
@@ -191,7 +228,7 @@ void css::CCascadingParser::HandleComment()
 
 std::string css::CCascadingParser::HandleName(bool allowSpaces)
 {
-    static const std::string_view symbols = "#-.%,()";
+    static const std::string_view symbols = "#-.%,()/\"";
     auto start = m_Index;
     while (m_Index < m_Input.size())
     {
@@ -397,6 +434,7 @@ void css::CCascadingParser::HandleAtRule()
     std::string rulename = m_Input.substr(begin, m_Index - begin);
     if (rulename == "media")
     {
+        /* This entire logic just to ignore the declaration. */
         int level = 1;
         while(m_Index < m_Input.size() && m_Input[m_Index] != '{') m_Index++;
         while(m_Index < m_Input.size() && (m_Input[m_Index] != '}' && level > 0))
@@ -435,11 +473,10 @@ void css::CCascadingParser::HandleAtRule()
         check = m_Input.substr(begin, m_Index - begin);
         auto url = m_Base.HandleRelative(check);
 
-        http::CRequestClient cl(url);
-        auto res = cl.Perform();
-        if (res.StatusCode == 200)
+        auto res = http::Fetch(url).GetLeft();
+        if (res->StatusCode == 200)
         {
-            m_Input.insert(m_Index, res.Body);
+            m_Input.insert(m_Index, res->Body);
         }
     }
 }

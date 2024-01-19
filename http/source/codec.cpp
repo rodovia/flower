@@ -1,11 +1,19 @@
 #include "codec.h"
 #include "source/session.h"
+#include <algorithm>
 #include <charconv>
 
 template<class _Iy, class _By>
 constexpr _Iy max(_Iy X, _By y) 
 { 
     return static_cast<_Iy>((X) > (y) ? (X) : (y)); 
+}
+
+static inline char __tolower(char in) 
+{
+    if (in <= 'Z' && in >= 'A')
+        return in - ('Z' - 'z');
+    return in;
 }
 
 std::string http::CreateHeadingWith(http_version version, 
@@ -24,7 +32,7 @@ std::string http::CreateHeadingWith(http_version version,
         result += " HTTP/1.1";
         break;
     }
-    result += "\r\n\r\n";
+    result += "\r\n";
 
     for (auto& h : headermap)
     {
@@ -57,6 +65,7 @@ int http::ParserHeadersStatus(std::string_view origin,
             std::string name = std::string(fld.substr(0, sepidx));
             std::string value = std::string(fld.substr(sepidx + 2));
 
+            std::transform(name.begin(), name.end(), name.begin(), __tolower);
             map.emplace(name, value);
             begin = index + 1;
         }

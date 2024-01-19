@@ -48,6 +48,7 @@ public:
     std::string GetTitle() const;
 
 private:
+    void HandleImplicitTags(std::string_view tag);
     void AddText(std::string text);
     void AddTag(std::string text);
     std::string_view SplitAttributes(dom_element_node& node, 
