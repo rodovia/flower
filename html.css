@@ -4,6 +4,8 @@ html, body {
     background-color: white;
     color: black;
     font-family: serif;
+    font-size: 12pt; /* So HandleRelativeUnit does not explode
+                        into oblivion */ 
 }
 
 a {
@@ -11,7 +13,6 @@ a {
 }
 
 pre {
-    background-color: darksalmon;
     font-family: Terminus;
 }
 
@@ -61,4 +62,42 @@ small {
     font-size: 8pt;
 }
 
+/* Tables */ 
 
+table {
+    margin-bottom: 1em;
+    display: table;
+}
+
+tr {
+    display: table-row;
+}
+
+tbody {
+    display: table-row-group;
+}
+
+thead { /* If nth-child gets supported,
+           make this selector as thead:first-child */
+    display: table-header-group;
+}
+
+tfoot {
+    display: table-footer-group;
+}
+
+col {
+    display: table-column;
+}
+
+colgroup {
+    display: table-column-group;
+}
+
+td, th {
+    display: table-cell;
+}
+
+caption {
+    display: table-caption;
+}

@@ -28,6 +28,16 @@ enum layout_mode
     kLayoutModeNone,
     kLayoutModeInline,
     kLayoutModeBlock,
+
+    kLayoutModeTable,
+    kLayoutModeTableRow,
+    kLayoutModeTableRowGroup,
+    kLayoutModeTableHeader,
+    kLayoutModeTableFooter,
+    kLayoutModeTableColumn,
+    kLayoutModeTableColumnGroup,
+    kLayoutModeTableCell,
+    kLayoutModeTableCaption,
 };
 
 struct rectangle
@@ -38,6 +48,12 @@ struct rectangle
     __consteval_or_nothing rectangle()
         : X(0), Y(0),
           Width(0), Height(0)
+    {}
+
+    __constexpr_or_nothing rectangle(unsigned int x, unsigned int y,
+                                     unsigned int w, unsigned int h)
+        : X(x), Y(y),
+          Width(w), Height(h)
     {}
 
     __constexpr_or_nothing inline bool InsideRect(unsigned int x, unsigned int y)

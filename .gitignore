@@ -1,4 +1,5 @@
 build/
+build_scanbuild/
 .cache/
 p2.html
 redir.html

@@ -7,6 +7,7 @@
 #include "css.h"
 
 #include "source/drawable.h"
+#include "source/layout_table.h"
 #include "source/rectangle.h"
 #include "text.h"
 
@@ -40,9 +41,33 @@ DisplayPropertyToLayoutType(const css::css_basic_value& bv)
         return draw::kLayoutModeInline;
     else if (str.String == "none")
         return draw::kLayoutModeNone;
+    else if (str.String == "table")
+        return draw::kLayoutModeTable;
+    else if (str.String == "table-row")
+        return draw::kLayoutModeTableRow;
+    else if (str.String == "table-row-group")
+        return draw::kLayoutModeTableRowGroup;
+    else if (str.String == "table-header-group")
+        return draw::kLayoutModeTableHeader;
+    else if (str.String == "table-footer-group")
+        return draw::kLayoutModeTableFooter;
+    else if (str.String == "table-column")
+        return draw::kLayoutModeTableColumn;
+    else if (str.String == "table-cell")
+        return draw::kLayoutModeTableCell;
+    else if (str.String == "table-caption")
+        return draw::kLayoutModeTableCaption;
+
 
     std::printf("DisplayPropertyToLayoutType unsupported value %s\n", str.String.c_str());
     return draw::kLayoutModeNone;
+}
+
+/* Whether the node must be layouted side-by-side from its
+   neighbor. */
+constexpr static bool IsLayoutModeInline(draw::layout_mode lm)
+{
+    return lm == draw::kLayoutModeTableCell || lm == draw::kLayoutModeInline;
 }
 
 void draw::ExtendDisplayListFor(std::vector<std::shared_ptr<IDrawable>>& dpl, 
@@ -152,6 +177,8 @@ void draw::layout_block_node::PerformIntermdtLayout()
 
 void draw::layout_block_node::Layout()
 {
+    DisplayList.clear();
+    css::css_relative_units_base base;
     auto lm = this->GetLayoutMode();
     if (lm == kLayoutModeNone)
     {
@@ -165,39 +192,39 @@ void draw::layout_block_node::Layout()
     css::css_map::iterator mg;
     if (HasCssProp(Node->Style, "margin-left", mg))
     {
-        auto ref = css::EnsureReferenceUnit(*mg->second);
+        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
         Position.X += ref;
     }
 
     if (HasCssProp(Node->Style, "margin-top", mg))
     {
-        auto ref = css::EnsureReferenceUnit(*mg->second);
+        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
         Position.Y += ref;
     }
 
     if (HasCssProp(Node->Style, "margin-bottom", mg))
     {
-        auto ref = css::EnsureReferenceUnit(*mg->second);
+        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
         Position.Height += ref;
     }
 
     if (HasCssProp(Node->Style, "margin-right", mg))
     {
-        auto ref = css::EnsureReferenceUnit(*mg->second);
+        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
         Position.Width += ref;
     }
 
     css::css_map::iterator wi;
     if ((wi = Node->Style.find("width")) != Node->Style.end())
     {
-        auto ref = css::EnsureReferenceUnit(*wi->second);
+        auto ref = css::EnsureReferenceUnit(*wi->second, base, Node);
         Position.Width = static_cast<int>(ref);
         ForcedWidth = true;
     }
     
     if ((wi = Node->Style.find("height")) != Node->Style.end())
     {
-        auto ref = css::EnsureReferenceUnit(*wi->second);
+        auto ref = css::EnsureReferenceUnit(*wi->second, base, Node);
         Position.Height = static_cast<int>(ref);
         ForcedHeight = true;
     }
@@ -210,24 +237,28 @@ void draw::layout_block_node::Layout()
         Position.Width = Parent->Position.Width;
     }
     
-    if (Previous != nullptr && Previous->LayoutMode != kLayoutModeInline)
+    if (Previous != nullptr && !IsLayoutModeInline(lm))
     {
-        std::printf("pos y = prev pos y (%i) + prev pos h (%i)\n", Previous->Position.Y,
-                    Previous->Position.Height);
         Position.Y = Previous->Position.Y + Previous->Position.Height;
     }
 
-    if (lm == kLayoutModeInline)
+    if (IsLayoutModeInline(lm))
     {
         if (Node->Type == html::kDomNodeTypeElement)
         {
             Position.Width = 0;
+            size_t newHeight = ForcedHeight ? Position.Height : 0;
             for (auto& c : Children)
             {
                 auto stc = static_cast<layout_block_node*>(c.get());
                 stc->Layout();
+
+                if (stc->Position.Height > newHeight)
+                    newHeight = stc->Position.Height;
                 Position.Width += stc->Position.Width;
             }
+            
+            Position.Height = newHeight;
             if (Previous != nullptr)
                 Position.X += Previous->Position.Width;
             return;
@@ -262,10 +293,19 @@ void draw::layout_block_node::Layout()
 
         Position.Width = presumedw;
     }
+    else if (lm == kLayoutModeTable)
+    {
+        for (auto& child : Children)
+        {
+            static_cast<layout_block_node&>(*child).PerformIntermdtLayout();
+        }
+        draw::ComputeTableLayout(*this);
+    }
 }
 
 void draw::layout_block_node::CreateText(html::dom_text_node* node)
 {
+    css::css_relative_units_base base;
     CTextBuilder bu;
     css::css_map::iterator color, ff;
     css::css_color cl = {0, 0, 0};
@@ -285,7 +325,7 @@ void draw::layout_block_node::CreateText(html::dom_text_node* node)
 
         if (HasCssProp(Node->Style, "font-size", ff))
         {
-            auto size = css::EnsureReferenceUnit(*ff->second);
+            auto size = css::EnsureReferenceUnit(*ff->second, base, Node);
             pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
         }
     }
@@ -301,7 +341,6 @@ void draw::layout_block_node::CreateText(html::dom_text_node* node)
     if (Previous != nullptr
      && Previous->LayoutMode == kLayoutModeInline)
     {
-        std::printf("prev wid %i\n", Previous->Position.Width);
         Position.X += Previous->Position.Width + Previous->Position.X; 
     }
 
