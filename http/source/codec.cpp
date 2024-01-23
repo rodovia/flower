@@ -65,6 +65,8 @@ int http::ParserHeadersStatus(std::string_view origin,
             std::string name = std::string(fld.substr(0, sepidx));
             std::string value = std::string(fld.substr(sepidx + 2));
 
+            /* Some websites (namely, based off my testing, Wikipedia and Reddit) 
+               like to make mix lowercase and titlecase header names. */
             std::transform(name.begin(), name.end(), name.begin(), __tolower);
             map.emplace(name, value);
             begin = index + 1;

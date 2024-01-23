@@ -1,7 +1,7 @@
 #include "layout_table.h"
 #include "html.h"
 #include "html_node.h"
-#include "source/layout.h"
+#include "layout.h"
 #include <memory>
 
 struct cell
@@ -20,7 +20,8 @@ static void RecursiveLayoutMode(draw::layout_generic_node& node)
 }
 
 static void ComputeRowLayout(std::shared_ptr<draw::layout_generic_node> node,
-                             unsigned int& width, unsigned int& height)
+                             unsigned int& width, unsigned int& height,
+                             draw::rectangle& rowunits)
 {
     size_t layoutw = width, 
            layouth = height;
@@ -59,6 +60,7 @@ static void ComputeRowLayout(std::shared_ptr<draw::layout_generic_node> node,
         if (&child == &node->Children.back())
             currentheight++;
     }
+    rowunits = { currentwidth, currentheight, colspan, rowspan };
 
     /* Mapping cell coordinates into screen coordinates */
     /* TODO: replace all instances of ' + 5' with cell-spacing CSS property */
@@ -76,8 +78,38 @@ static void ComputeRowLayout(std::shared_ptr<draw::layout_generic_node> node,
     }
 }
 
+static void ComputeRowGroupLayout(std::shared_ptr<draw::layout_generic_node> node,
+                                  const draw::rectangle& start)
+{
+    unsigned int previoush;
+    unsigned int correctheight;
+    draw::rectangle unused;
+    for (auto& child : node->Children)
+    {
+        if (child->LayoutMode == draw::kLayoutModeTableRow)
+        {
+            if (child->Previous)
+            {
+                previoush = child->Previous->Position.Height + child->Previous->Position.Y;
+            }
+
+            child->Position.Y += previoush;
+            ComputeRowLayout(child, child->Position.X, correctheight, unused);
+            child->Position.Y = correctheight;
+            node->Position.Height += correctheight;
+        }
+    }
+/*
+    if (node->Position.Height > node->Parent->Position.Height)
+    {
+
+    }
+*/
+}
+
 void draw::ComputeTableLayout(layout_block_node& node)
 {
+    bool seenCaption = false;
     node.Position.Width = 0;
     if (node.LayoutMode != kLayoutModeTable 
      && node.LayoutMode != kLayoutModeNotComputed)
@@ -93,9 +125,16 @@ void draw::ComputeTableLayout(layout_block_node& node)
     
     size_t previoush = 0;
     unsigned int correctheight = 0;
+    draw::rectangle row;
     RecursiveLayoutMode(node);
     for(auto& child : node.Children)
     {
+        if (child->LayoutMode == kLayoutModeTableCaption && !seenCaption)
+        {
+            std::static_pointer_cast<draw::layout_block_node>(child)->Layout();
+            seenCaption = true;
+        }
+
         if (child->LayoutMode == kLayoutModeTableRow)
         {
             if (child->Previous)
@@ -103,13 +142,16 @@ void draw::ComputeTableLayout(layout_block_node& node)
                 previoush = child->Previous->Position.Height + child->Previous->Position.Y;
             }
 
-            std::printf("previoush %lu\n", previoush);
-            std::printf("child->Pos.y = %i\n", child->Position.Y);
             child->Position.Y += previoush;
-            ComputeRowLayout(child, child->Position.X, correctheight);
+            ComputeRowLayout(child, child->Position.X, correctheight, row);
             child->Position.Y = correctheight;
             node.Position.Height += child->Position.Y;
             node.Position.Width += child->Position.X + 1;
+        }
+
+        if (child->LayoutMode == kLayoutModeTableRowGroup)
+        {
+            ComputeRowGroupLayout(child, row);
         }
     }
 }

@@ -230,6 +230,11 @@ std::string css::CCascadingParser::HandleName(bool allowSpaces)
 {
     static const std::string_view symbols = "#-.%,()/\"";
     auto start = m_Index;
+    if (m_Input[start] == '\"')
+    {
+        return this->HandleQuotedName();
+    }
+
     while (m_Index < m_Input.size())
     {
         if (std::isalnum(m_Input[m_Index])
@@ -479,4 +484,26 @@ void css::CCascadingParser::HandleAtRule()
             m_Input.insert(m_Index, res->Body);
         }
     }
+}
+
+std::string css::CCascadingParser::HandleQuotedName()
+{
+    if (m_Input[m_Index] == '\"')
+    {
+        m_Index++;
+    }
+
+    size_t begin = m_Index;
+    while (m_Index < m_Input.size())
+    {
+        if (m_Input[m_Index] == '\"' 
+         && m_Input[m_Index - 1] != '\\')
+        {
+            break;
+        }
+
+        m_Index++;
+    }
+
+    return m_Input.substr(begin, m_Index - begin);
 }

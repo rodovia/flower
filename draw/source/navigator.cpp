@@ -5,7 +5,7 @@
 
 #include "flower_http.h"
 #include "source/drawable.h"
-#include "source/layout.h"
+#include "layout/layout.h"
 #include "source/paintable/chrome.h"
 #include "source/request.h"
 #include "source/session_manager.h"

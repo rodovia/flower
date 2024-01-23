@@ -114,6 +114,7 @@ private:
     void HandleAtRule();
     void HandleWhitespace();
     void HandleComment();
+    std::string HandleQuotedName();
     css_color HandleColor(std::string_view value);
     css_kv HandlePair();
     std::string HandleName(bool allowSpaces = false);

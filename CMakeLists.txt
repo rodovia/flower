@@ -5,9 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 
 option(FLOWER_BUILD_TESTS "Build tests alongside flower binary" NO)
 
-if(MSVC)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/W4)
-else()
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall
                         -Wno-reorder-ctor
                         -Wno-embedded-directive # Embedding a directive within 

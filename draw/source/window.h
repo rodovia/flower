@@ -5,7 +5,7 @@
 
 #include "drawable.h"
 #include "scrollbar.h"
-#include "source/layout.h"
+#include "layout/layout.h"
 #include "source/navigator.h"
 
 #include <string_view>

@@ -1,6 +1,6 @@
 #include "rectangle.h"
 #include "source/drawable.h"
-#include "source/layout.h"
+#include "layout/layout.h"
 #include <cairo.h>
 
 draw::CRectangle::CRectangle(css::css_color color, draw::rectangle rect,

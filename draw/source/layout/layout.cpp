@@ -7,9 +7,9 @@
 #include "css.h"
 
 #include "source/drawable.h"
-#include "source/layout_table.h"
+#include "layout_table.h"
 #include "source/rectangle.h"
-#include "text.h"
+#include "source/text.h"
 
 #include <algorithm>
 #include <cmath>
@@ -237,7 +237,7 @@ void draw::layout_block_node::Layout()
         Position.Width = Parent->Position.Width;
     }
     
-    if (Previous != nullptr && !IsLayoutModeInline(lm))
+    if (Previous != nullptr && !IsLayoutModeInline(Previous->LayoutMode))
     {
         Position.Y = Previous->Position.Y + Previous->Position.Height;
     }
@@ -300,6 +300,13 @@ void draw::layout_block_node::Layout()
             static_cast<layout_block_node&>(*child).PerformIntermdtLayout();
         }
         draw::ComputeTableLayout(*this);
+    }
+    else if (lm == kLayoutModeTableCaption)
+    {
+        for (auto& child : Children)
+        {
+            static_cast<layout_block_node&>(*child).Layout();
+        }
     }
 }
 

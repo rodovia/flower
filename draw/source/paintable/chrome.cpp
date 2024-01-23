@@ -1,5 +1,5 @@
 #include "chrome.h"
-#include "source/layout.h"
+#include "source/layout/layout.h"
 #include "source/navigator.h"
 #include "source/paintable/address_bar.h"
 #include "source/rectangle.h"

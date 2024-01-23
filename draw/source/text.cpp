@@ -1,6 +1,6 @@
 #include "text.h"
 #include "source/drawable.h"
-#include "source/layout.h"
+#include "layout/layout.h"
 #include <cairo.h>
 #include <pango/pango-font.h>
 #include <pango/pango-layout.h>

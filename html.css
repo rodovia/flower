@@ -101,3 +101,8 @@ td, th {
 caption {
     display: table-caption;
 }
+
+/*  Other stuff */
+dd {
+    margin-left: 5px;
+}
