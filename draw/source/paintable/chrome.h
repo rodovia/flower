@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "css.h"
 #include "source/drawable.h"
 #include "source/layout/layout.h"
 #include "source/paintable/address_bar.h"
@@ -40,6 +41,10 @@ public:
 
 private:
     void ComputeLayout();
+
+    css::css_color m_ChromeColor;
+    css::css_color m_ActiveTabColor;
+    css::css_color m_InactiveTabColor;
 
     navigator::CNavigator* m_Navigator;
     std::shared_ptr<CAddressBar> m_AddressBar;

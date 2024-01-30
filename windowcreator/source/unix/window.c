@@ -65,7 +65,16 @@ static inline void RunEvent(struct event_handler* head, int type,
 
 static void CreateInputContext(wWindow* window)
 {
-    window->imethod = XOpenIM(window->display, NULL, NULL, NULL);
+    if ((window->imethod = XOpenIM(window->display, NULL, NULL, NULL)) == NULL)
+    {
+        XSetLocaleModifiers("@im=");
+        if ((window->imethod = XOpenIM(window->display, NULL, NULL, NULL)) == NULL )
+        {
+            printf("Could not create IM connection. "
+                   "WC_EVENT_CHAR may not be dispatched correctly\n");
+        }
+    }
+
     window->ictx = XCreateIC(window->imethod, 
                              XNClientWindow, window->wind,
                              XNFocusWindow, window->wind,
@@ -155,6 +164,7 @@ void wWindowRunForever(wWindow* d)
         }
         case ButtonPress:
         {
+
             if (event.xbutton.button == 4
              || event.xbutton.button == 5)
             {

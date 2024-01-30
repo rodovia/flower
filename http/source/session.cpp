@@ -166,7 +166,6 @@ void http::CHttpSession::PerformRequestInner(const http::request_entry& req)
     using namespace std::string_literals;
 
     auto heading = http::CreateHeadingWith(kHttpVersion11, req.Path, req.Headers);
-    std::printf("heading=%s\n", heading.c_str());
     m_Socket->Write(heading.data(), heading.size());
 
     int status;
@@ -210,7 +209,7 @@ void http::CHttpSession::PerformRequestInner(const http::request_entry& req)
     {
         /* Because... TCP, a chunk can sneak inside 
            response buffer. */
-        this->ReadChunked(body);
+        body = this->ReadChunked(body);
     }
 
     if (rep.contains("connection")
@@ -224,11 +223,15 @@ void http::CHttpSession::PerformRequestInner(const http::request_entry& req)
     resp.StatusCode = status;
     resp.Body = body;
     resp.Headers = std::move(rep);
+    resp.Url.Scheme = m_Scheme;
+    resp.Url.Host = m_Host;
+    resp.Url.Path = req.Path;
+
     std::printf("Statuscode=%i\n", status);
     m_Future.SetPositiveResult(resp);
 }
 
-void http::CHttpSession::ReadChunked(std::string_view bodyRemainder)
+std::string http::CHttpSession::ReadChunked(std::string_view bodyRemainder)
 {
     int length;
     std::string body, rawresp;
@@ -237,13 +240,15 @@ void http::CHttpSession::ReadChunked(std::string_view bodyRemainder)
     size_t rlength;
     while(true)
     {
+        if (length == 0 || rlength <= 0) break;
         rlength = rawresp.size();
         rawresp.resize(rlength + 1024);
         rlength = m_Socket->Read(&rawresp[rlength], 1024);
 
         int length = http::ReadChunkedContent(&rawresp[rlength], body);
-        if (length == 0 || rlength <= 0) break;
     }
+
+    return body;
 }
 
 bool http::CHttpSession::UpgradeSocket(std::string_view newScheme)

@@ -38,7 +38,7 @@ public:
     void SetUserAgent(std::string ua);
 private:
     bool UpgradeSocket(std::string_view newScheme);
-    void ReadChunked(std::string_view bodyRemainder);
+    std::string ReadChunked(std::string_view bodyRemainder);
     void PerformRequestInner(const request_entry&);
     static void* RequestThreadThunk(void*);
     pthread_t CreateRequestThread();

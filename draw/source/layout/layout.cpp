@@ -7,7 +7,8 @@
 #include "css.h"
 
 #include "source/drawable.h"
-#include "layout_table.h"
+#include "source/layout/input.h"
+#include "table.h"
 #include "source/rectangle.h"
 #include "source/text.h"
 
@@ -57,17 +58,20 @@ DisplayPropertyToLayoutType(const css::css_basic_value& bv)
         return draw::kLayoutModeTableCell;
     else if (str.String == "table-caption")
         return draw::kLayoutModeTableCaption;
+    else if (str.String == "-flower-input")
+        return draw::kLayoutModeInput;
 
 
     std::printf("DisplayPropertyToLayoutType unsupported value %s\n", str.String.c_str());
     return draw::kLayoutModeNone;
 }
 
-/* Whether the node must be layouted side-by-side from its
+/* Whether the node must be placed side-by-side from its
    neighbor. */
 constexpr static bool IsLayoutModeInline(draw::layout_mode lm)
 {
-    return lm == draw::kLayoutModeTableCell || lm == draw::kLayoutModeInline;
+    return lm == draw::kLayoutModeTableCell || lm == draw::kLayoutModeInline
+        || lm == draw::kLayoutModeInput;
 }
 
 void draw::ExtendDisplayListFor(std::vector<std::shared_ptr<IDrawable>>& dpl, 
@@ -111,7 +115,7 @@ draw::layout_generic_node::CreateDisplayList()
         cmds.push_back(std::make_shared<CRectangle>(color, Position, scroll));
     }
 
-    if (this->GetLayoutMode() == kLayoutModeInline)
+    if (IsLayoutModeInline(LayoutMode))
     {
         for (auto& a : DisplayList)
         {
@@ -177,7 +181,6 @@ void draw::layout_block_node::PerformIntermdtLayout()
 
 void draw::layout_block_node::Layout()
 {
-    DisplayList.clear();
     css::css_relative_units_base base;
     auto lm = this->GetLayoutMode();
     if (lm == kLayoutModeNone)
@@ -188,47 +191,8 @@ void draw::layout_block_node::Layout()
         Position.Y = 0;
         return;
     }
-
-    css::css_map::iterator mg;
-    if (HasCssProp(Node->Style, "margin-left", mg))
-    {
-        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
-        Position.X += ref;
-    }
-
-    if (HasCssProp(Node->Style, "margin-top", mg))
-    {
-        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
-        Position.Y += ref;
-    }
-
-    if (HasCssProp(Node->Style, "margin-bottom", mg))
-    {
-        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
-        Position.Height += ref;
-    }
-
-    if (HasCssProp(Node->Style, "margin-right", mg))
-    {
-        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
-        Position.Width += ref;
-    }
-
-    css::css_map::iterator wi;
-    if ((wi = Node->Style.find("width")) != Node->Style.end())
-    {
-        auto ref = css::EnsureReferenceUnit(*wi->second, base, Node);
-        Position.Width = static_cast<int>(ref);
-        ForcedWidth = true;
-    }
     
-    if ((wi = Node->Style.find("height")) != Node->Style.end())
-    {
-        auto ref = css::EnsureReferenceUnit(*wi->second, base, Node);
-        Position.Height = static_cast<int>(ref);
-        ForcedHeight = true;
-    }
-
+    this->CreateBoxModel();
     this->PerformIntermdtLayout();
     Position.X += Parent->Position.X;
     Position.Y += Parent->Position.Y;
@@ -241,34 +205,51 @@ void draw::layout_block_node::Layout()
     {
         Position.Y = Previous->Position.Y + Previous->Position.Height;
     }
+    else if (Previous != nullptr && IsLayoutModeInline(Previous->LayoutMode))
+    {
+        auto elem = Previous;
+        while(elem != nullptr)
+        {
+            if (!IsLayoutModeInline(elem->LayoutMode)) break;
+            elem = elem->Previous;
+        }
+
+        if (elem != nullptr)
+        {
+            Position.Y = elem->Position.Y + elem->Position.Height;
+        }
+
+        Position.X += Previous->Position.Width + Previous->Position.X;
+    }
 
     if (IsLayoutModeInline(lm))
     {
         if (Node->Type == html::kDomNodeTypeElement)
         {
-            Position.Width = 0;
+            Position.Width = ForcedWidth ? Position.Width : 0;
             size_t newHeight = ForcedHeight ? Position.Height : 0;
             for (auto& c : Children)
             {
                 auto stc = static_cast<layout_block_node*>(c.get());
                 stc->Layout();
 
+                /* What if an node has Width < Parent.Width
+                    but X > Parent.X?
+                    TODO: Handle those cases. */
                 if (stc->Position.Height > newHeight)
                     newHeight = stc->Position.Height;
-                Position.Width += stc->Position.Width;
+                if (stc->Position.Width > Position.Width)
+                    Position.Width += stc->Position.Width;
             }
             
             Position.Height = newHeight;
-            if (Previous != nullptr)
-                Position.X += Previous->Position.Width;
-            return;
         }
-
-        auto text = static_cast<html::dom_text_node*>(Node.get());
-        this->CreateText(text);
-        return;
+        else {
+            auto text = static_cast<html::dom_text_node*>(Node.get());
+            this->CreateText(text);
+        }
     }
-    else if (lm == kLayoutModeBlock)
+    else if (lm == kLayoutModeBlock || lm == kLayoutModeTableCaption)
     {
         int presumedw = ForcedWidth ? Position.Width : 0;
         for (auto& child : Children)
@@ -301,12 +282,10 @@ void draw::layout_block_node::Layout()
         }
         draw::ComputeTableLayout(*this);
     }
-    else if (lm == kLayoutModeTableCaption)
+    
+    if (lm == kLayoutModeInput)
     {
-        for (auto& child : Children)
-        {
-            static_cast<layout_block_node&>(*child).Layout();
-        }
+        draw::CreateInputDisplayList(this);
     }
 }
 
@@ -345,15 +324,53 @@ void draw::layout_block_node::CreateText(html::dom_text_node* node)
         Position.X += Parent->Previous->Position.Width + Parent->Previous->Position.X;        
     }
 
-    if (Previous != nullptr
-     && Previous->LayoutMode == kLayoutModeInline)
-    {
-        Position.X += Previous->Position.Width + Previous->Position.X; 
-    }
-
     bu.SetRectangle(Position, !(ForcedWidth || ForcedHeight))
         ->SetText(node->Text);
     bu.Manufacture(dr);
     Position = dr->GetRectangle();
     DisplayList.push_back(dr);
+}
+
+void draw::layout_block_node::CreateBoxModel()
+{
+    css::css_map::iterator mg;
+    css::css_relative_units_base base;
+    if (HasCssProp(Node->Style, "margin-left", mg))
+    {
+        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
+        Position.X += ref;
+    }
+
+    if (HasCssProp(Node->Style, "margin-top", mg))
+    {
+        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
+        Position.Y += ref;
+    }
+
+    if (HasCssProp(Node->Style, "margin-bottom", mg))
+    {
+        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
+        Position.Height += ref;
+    }
+
+    if (HasCssProp(Node->Style, "margin-right", mg))
+    {
+        auto ref = css::EnsureReferenceUnit(*mg->second, base, Node);
+        Position.Width += ref;
+    }
+
+    css::css_map::iterator wi;
+    if ((wi = Node->Style.find("width")) != Node->Style.end())
+    {
+        auto ref = css::EnsureReferenceUnit(*wi->second, base, Node);
+        Position.Width = static_cast<int>(ref);
+        ForcedWidth = true;
+    }
+    
+    if ((wi = Node->Style.find("height")) != Node->Style.end())
+    {
+        auto ref = css::EnsureReferenceUnit(*wi->second, base, Node);
+        Position.Height = static_cast<int>(ref);
+        ForcedHeight = true;
+    }
 }

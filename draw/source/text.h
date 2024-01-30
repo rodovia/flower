@@ -18,6 +18,7 @@ namespace draw
 
 class CTextWriter : public IDrawable
 {
+    friend class CTextBuilder;
 public:
     CTextWriter() = default;
     CTextWriter(std::string text, css::css_color color = { 255, 255, 255 });
@@ -33,12 +34,14 @@ public:
     void Repaint(const PainterState& ctx) override;
     
 private:
-    PangoRectangle m_BoxSizes;
     PangoFontDescription* m_Font;
     PangoLayout* m_Layout;
 
     std::string m_Text;
     css::css_color m_Color;
+    PangoRectangle m_BoxSizes;
+    bool m_ShouldForceRectangle; /* The text should be strictly
+                                    confined to its rectangle. */
 };
 
 class CTextBuilder
@@ -79,6 +82,12 @@ public:
         return this;
     }
 
+    CTextBuilder* SetStrictConfinance(bool strict)
+    {
+        m_StrictConfine = strict;
+        return this;
+    }
+
     void Manufacture(std::shared_ptr<class CTextWriter>& wri)
     {
         wri = std::make_shared<CTextWriter>(m_Font, m_Text, m_Color, rectangle{});
@@ -89,16 +98,18 @@ public:
         }
 
         wri->SetRectangle(m_Rectangle);
+        wri->m_ShouldForceRectangle = m_StrictConfine;
     }
 
 private:
-    double m_Size;
-    int m_Width, m_Height;
-    bool m_OverrideCache;
-    PangoFontDescription* m_Font;
     std::string m_Text;
     css::css_color m_Color;
     rectangle m_Rectangle;
+    double m_Size;
+    PangoFontDescription* m_Font;
+    int m_Width, m_Height;
+    bool m_OverrideCache;
+    bool m_StrictConfine = false;
 };
 
 }

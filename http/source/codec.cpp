@@ -96,6 +96,7 @@ int http::ReadChunkedContent(std::string_view buffer,
     size_t index = 0;
     size_t begin = 0;
     bool lookingForLength = true;
+    if (buffer.starts_with('\n')) buffer = buffer.substr(1);
 
     while(index < buffer.size())
     {

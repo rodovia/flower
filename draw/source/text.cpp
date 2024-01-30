@@ -18,7 +18,8 @@ draw::CTextWriter::CTextWriter(PangoFontDescription* font, std::string text, css
     : m_Font(std::move(font)),
       m_Text(text),
       m_Layout(nullptr),
-      m_Color(color)
+      m_Color(color),
+      m_ShouldForceRectangle(false)
 {
     if (m_Font == nullptr)
     {
@@ -51,6 +52,12 @@ void draw::CTextWriter::Paint(const draw::PainterState& pt)
     cairo_t* ctx = cairo_create(pt.Surface);
     if (m_Layout == nullptr)
         this->CreateLayout(ctx);
+
+    if (m_ShouldForceRectangle)
+    {
+        pango_layout_set_height(m_Layout, m_Rectangle.Height * PANGO_SCALE);
+        pango_layout_set_width(m_Layout, m_Rectangle.Width * PANGO_SCALE);
+    }
 
     cairo_move_to(ctx, m_Rectangle.X, m_Rectangle.Y + pt.TopOffset + -pt.ScrollOffset);
     pango_cairo_update_layout(ctx, m_Layout);

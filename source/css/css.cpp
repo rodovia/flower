@@ -1,4 +1,5 @@
 #include "css.h"
+#include "configuration.h"
 #include "css/css_selector.h"
 
 #include <byteswap.h>
@@ -6,6 +7,7 @@
 #include <algorithm>
 #include <cctype>
 #include <charconv>
+#include <limits>
 #include <memory>
 #include <pango/pango-fontmap.h>
 #include <pango/pangocairo.h>
@@ -20,15 +22,102 @@
 #include "source/request.h"
 #include "source/session_manager.h"
 
-static constinit frozen::unordered_map<frozen::string, int, 7> valuetype = {
+static constinit frozen::unordered_map<frozen::string, int, 14> valuetype = {
     { "cm", css::kCssDistanceUnitCentimeter },
     { "mm", css::kCssDistanceUnitMillimeter },
     { "Q", css::kCssDistanceUnitQuaterMillimeter },
     { "in", css::kCssDistanceUnitInch },
     { "pc", css::kCssDistanceUnitPica },
     { "pt", css::kCssDistanceUnitPoint },
-    { "px", css::kCssDistanceUnitPixel }  
+    { "px", css::kCssDistanceUnitPixel },
+
+    { "xx-small", css::kCssFontSizeXxSmall },
+    { "x-small", css::kCssFontSizeXSmall },
+    { "small", css::kCssFontSizeSmall },
+    { "medium", css::kCssFontSizeMedium },
+    { "large", css::kCssFontSizeLarge },
+    { "x-large", css::kCssFontSizeXLarge },
+    { "xx-large", css::kCssFontSizeXxLarge }
 };
+
+static constexpr float GetFontSizeFactor(css::css_font_size_units abs)
+{
+    float factor = 1.0f;
+    switch (abs)
+    {
+    case css::kCssFontSizeXxSmall:
+        factor = 0.6f;
+        break;
+    case css::kCssFontSizeXSmall:
+        factor = 0.75f;
+        break;
+    case css::kCssFontSizeSmall:
+        factor = 0.88f;
+        break;
+    case css::kCssFontSizeLarge:
+        factor = 1.2f;
+        break;
+    case css::kCssFontSizeXLarge:
+        factor = 2.0f;
+        break;
+    case css::kCssFontSizeXxLarge:
+        factor = 3.0f;
+        break;
+    default:
+        break;
+    }
+
+    return factor;
+}
+
+static constexpr int GetAbsoluteFontSize(std::string_view unit)
+{
+    if (unit == "xx-small")
+        return css::kCssFontSizeXxSmall;
+    if (unit == "x-small")
+        return css::kCssFontSizeXSmall;
+    if (unit == "small")
+        return css::kCssFontSizeSmall;
+    if (unit == "medium")
+        return css::kCssFontSizeMedium;
+    if (unit == "large")
+        return css::kCssFontSizeLarge;
+    if (unit == "x-large")
+        return css::kCssFontSizeXLarge;
+    if (unit == "xx-large")
+        return css::kCssFontSizeXxLarge;
+    
+    return 0;
+}
+
+static constexpr bool __between(int x, int y, double val)
+{
+    return ((unsigned int)(val - x) <= y);
+}
+
+static constexpr int
+GetAbsoluteFontSizeComputed(double computed)
+{
+    float cmpxxs = computed * GetFontSizeFactor(css::kCssFontSizeXxSmall);
+    float cmpxs = computed * GetFontSizeFactor(css::kCssFontSizeXSmall);
+    float cmps = computed * GetFontSizeFactor(css::kCssFontSizeSmall);
+    float cmpl = computed * GetFontSizeFactor(css::kCssFontSizeLarge);
+    float cmpxl = computed * GetFontSizeFactor(css::kCssFontSizeXLarge);
+    float cmpxxl = computed * GetFontSizeFactor(css::kCssFontSizeXxLarge);
+
+    if (cmpxxs < computed < cmpxs)
+        return css::kCssFontSizeXxSmall;
+    else if (cmpxs < computed < cmps)
+        return css::kCssFontSizeXSmall;
+    else if (cmps < computed < cmpl)
+        return css::kCssFontSizeSmall;
+    else if (cmpl < computed < cmpxl)
+        return css::kCssFontSizeLarge;
+    else if (cmpxl < computed < cmpxxl)
+        return css::kCssFontSizeXLarge;
+    else if (cmpxxl < computed)
+        return css::kCssFontSizeXxLarge;
+}
 
 /* Used by rgb() and hsl() */
 template<class _Ty = uint16_t, size_t _Ns = 3>
@@ -73,11 +162,6 @@ GetTuple3(std::string_view functionName,
     return ret;
 }
 
-static constexpr char __signed_tolower(unsigned char c)
-{
-    return static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-}
-
 bool css::GetFontForValue(const css_basic_value& bv, PangoFontFamily*& faml)
 {
     if (bv.Type != kCssValueTypeKeywordOrString)
@@ -100,13 +184,14 @@ bool css::GetFontForValue(const css_basic_value& bv, PangoFontFamily*& faml)
             fontname = str.substr(begin, index - commaskip); /* Do not include the comma 
                                                                        or the null terminator. */
             auto fm = pango_cairo_font_map_get_default();
-            if (fontname == "serif")
+            if (fontname == "serif"
+             || fontname == "cursive"
+             || fontname == "fantasy"
+             || fontname == "monospace"
+             || fontname == "sans-serif")
             {
-                fontname = "DejaVu Serif";
-            }
-            else if (fontname == "sans-serif")
-            {
-                fontname = "IBM Plex Sans";
+                if (fontname == "sans-serif") fontname = "sansSerif";
+                cfg::g_Configuration.lookupValue("navigator.css.genericFonts." + fontname, fontname);
             }
 
             auto ff = pango_font_map_get_family(fm, fontname.c_str());
@@ -162,13 +247,32 @@ float css::EnsureReferenceUnit(const css_basic_value &bv,
     std::from_chars(number.data(), number.data() + number.size(), numb);
 
     if (unit == "em" 
-     || unit == "%")
+     || unit == "%"
+     || unit == "smaller"
+     || unit == "larger"
+     || GetAbsoluteFontSize(unit) != 0)
     {
         HandleRelativeUnit(base, node);
         if (unit == "em")
             return base.FontSize * numb;
         if (unit == "%")
             return base.PercentageReference * (numb / 100);
+        
+        if (unit == "smaller"
+         || unit == "larger")
+        {
+            float factor = 1.0f;
+            if (unit == "smaller")
+                factor = 0.6f;
+
+            if (unit == "larger")
+                factor = 1.2f;
+
+            return base.FontSize * factor;
+        }
+            
+        auto abs = GetAbsoluteFontSize(unit);
+        float factor = 1.0f;
     }
 
     if (unit.empty()) return numb;
@@ -188,6 +292,14 @@ void css::HandleRelativeUnit(css_relative_units_base& base,
         else 
             base.FontSize = EnsureReferenceUnit(*node->Parent->Style.at("font-size"),
                                                 base, node->Parent);
+    }
+
+    if (base.CharacterAdvance == FLT_MIN)
+    {
+        PangoFontFamily* family;
+        auto fam = node->Style.at("font-family");
+        GetFontForValue(*fam, family);
+
     }
 }
 

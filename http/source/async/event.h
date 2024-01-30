@@ -11,6 +11,14 @@ namespace http
 class CEvent
 {
 public:
+    CEvent(const CEvent& rhs)
+        : m_Flag(rhs.m_Flag),
+          m_Condition(rhs.m_Condition),
+          m_Mutex(rhs.m_Mutex)
+    {
+
+    }
+
     inline CEvent()
         : m_Flag(false)
     {

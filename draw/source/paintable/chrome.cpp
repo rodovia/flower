@@ -1,4 +1,5 @@
 #include "chrome.h"
+#include "configuration.h"
 #include "source/layout/layout.h"
 #include "source/navigator.h"
 #include "source/paintable/address_bar.h"
@@ -24,6 +25,10 @@ draw::CChrome::CChrome(std::vector<navigator::document>* tabs,
       m_SelectedTab(selectedTab),
       m_AddressBar(nullptr)
 {
+    cfg::GetColor("navigator.chrome.inactiveTabColour", m_InactiveTabColor);
+    cfg::GetColor("navigator.chrome.activeTabColour", m_ActiveTabColor);
+    cfg::GetColor("navigator.chrome.backgroundColour", m_ChromeColor);
+
     m_Position.Height = TAB_HEIGHT + 35;
     m_Position.Width = 640;
     this->ComputeLayout();
@@ -43,7 +48,7 @@ void draw::CChrome::ComputeLayout()
         pos.Height = TAB_HEIGHT + 35;
         pos.X = 0;
         pos.Y = 0;
-        urlrect = std::make_shared<CRectangle>(css::css_color{128, 0, 0}, pos, false);
+        urlrect = std::make_shared<CRectangle>(m_ChromeColor, pos, false);
 
         m_AddressBar = std::make_shared<CAddressBar>(this, GetStringUrl((*m_Tabs)[m_SelectedTab].Url),
                                                      css::css_color{169, 169, 169});
@@ -64,7 +69,7 @@ void draw::CChrome::ComputeLayout()
             rpos.Y = 0;
             rpos.Width = TAB_WIDTH;
             rpos.Height = TAB_HEIGHT;
-            auto color = i == m_SelectedTab ? css::css_color{ 255, 0, 255 } : css::css_color{169, 169, 169};
+            auto color = i == m_SelectedTab ? m_ActiveTabColor : m_InactiveTabColor;
             drect = std::make_shared<CRectangle>(color, rpos, false);
 
             wr = std::make_shared<CTextWriter>(doc.Title.empty() ? "(no name)" : doc.Title);
@@ -89,7 +94,7 @@ void draw::CChrome::ComputeLayout()
         pos.Height = 30 - margin;
 
         std::shared_ptr<CRectangle> ntrect;
-        ntrect = std::make_shared<CRectangle>(css::css_color{128, 0, 0}, pos, false);
+        ntrect = std::make_shared<CRectangle>(m_ChromeColor, pos, false);
 
         std::shared_ptr<CTextWriter> nttext;
         nttext = std::make_shared<CTextWriter>("+");
@@ -106,7 +111,6 @@ void draw::CChrome::ComputeLayout()
 
 void draw::CChrome::SetSelectedTab(size_t sel)
 {
-    std::printf("sst m_Navigator %p\n", m_Navigator);
     m_SelectedTab = sel;
     this->ComputeLayout();
     m_Navigator->PaintCurrentTab();
@@ -132,13 +136,11 @@ void draw::CChrome::ThinkClick(int x, int y)
 {
     if (x <= 30 && y <= 25)
     {
-        m_Navigator->CreateTab(http::url("file:///home/miguelrodovia/dev/flower/orig.html"));
+        m_Navigator->CreateTab();
         return;
     }
 
-    bool fl = m_AddressBar->GetRectangle().InsideRect(x, y);
-    std::printf("fl = %i\n", fl);
-    if (fl)
+    if (m_AddressBar->GetRectangle().InsideRect(x, y))
     {
         m_AddressBar->ClearBuffer();
         m_Navigator->SetFocus(m_AddressBar.get());

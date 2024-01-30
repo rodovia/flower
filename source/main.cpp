@@ -1,21 +1,14 @@
-#include <cairo.h>
 #include <cstdio>
-#include "css.h"
-#include "css/css_selector.h"
-#include "html.h"
-#include "html_node.h"
-#include "flower_http.h"
+#include <windowcreator.h>
 #include "flower_draw.h"
-#include "source/async/future.h"
-#include "source/codec.h"
-#include "source/layout/layout.h"
-#include "source/request.h"
-#include "source/session.h"
-#include "windowcreator.h"
-#include "windowcreator/window.h"
+#include "flower_http.h"
+
+#define CONFIG_DEFINE_GLOBAL_VARIABLE
+#include "configuration.h"
 
 int main()
 {
+    cfg::ReadConfigurationFile();
     http::Initialize();
     std::printf("Olá, mundo!\n");
 

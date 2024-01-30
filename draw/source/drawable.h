@@ -8,6 +8,13 @@
 #include "layout/layout.h"
 #include <cairo.h>
 
+namespace navigator
+{
+    
+class CNavigator;
+
+}
+
 namespace draw
 {
 
@@ -39,6 +46,9 @@ struct IDrawable
     }
 
     virtual void ThinkKeyPress(uint16_t key, const PainterState& ps)
+    {}
+
+    virtual void ThinkButtonPress(int button, int x, int y, navigator::CNavigator* navigator)
     {}
 
     inline rectangle GetRectangle()

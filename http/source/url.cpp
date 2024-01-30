@@ -11,11 +11,22 @@ http::url::url(std::string ur)
         schemeend,
         pathpos;
 
-    schemepos = ur.find_first_of("://");
+    schemepos = ur.find("://");
     if (schemepos == std::string::npos)
     {
-        ur = ur.insert(0, "http://");
-        schemepos = ur.find_first_of("://");
+        /* TODO: Add rules for implicitly determining
+           if its a file scheme for Windows paths. */
+        if (ur.starts_with("/"))
+        {
+            /* It must be a file path. */
+            ur = ur.insert(0, "file://");
+            schemepos = ur.find("://");
+        }
+        else 
+        {
+            ur = ur.insert(0, "http://");
+            schemepos = ur.find("://");
+        }
     }
 
     schemeend = schemepos + 3;

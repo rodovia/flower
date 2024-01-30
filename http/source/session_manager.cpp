@@ -51,6 +51,7 @@ static http::response ReadFile(std::string_view filename)
     http::response rep;
     rep.Body = body;
     rep.StatusCode = 200;
+    rep.Url = http::url("file://"s + filename.data());
     return rep;
 }
 
@@ -76,7 +77,8 @@ http::Fetch(const http::url& origin, header_map headers)
 {
     if (origin.Scheme == "file")
     {
-        return ReadFile(origin.Host + origin.Path);
+        auto fl = ReadFile(origin.Host + origin.Path);
+        return fl;
     }
 
     auto& ins = CSessionManager::GetInstance();

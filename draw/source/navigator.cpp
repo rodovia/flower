@@ -1,4 +1,5 @@
 #include "navigator.h"
+#include "configuration.h"
 #include "css.h"
 #include "html.h"
 #include "html_node.h"
@@ -12,9 +13,27 @@
 #include <optional>
 #include <vector>
 
+static void SortRules(std::vector<css::css_rule>& rules)
+{
+    struct {
+        constexpr bool operator()(const css::css_rule& a, const css::css_rule& b)
+        {
+            /* ...so we can call the const variant of GetPriority. */
+            return a.first.GetPriority() < b.first.GetPriority();
+        }
+    } ruleless;
+
+    /* Compute the priority first... */
+    for (auto& c : rules) { c.first.GetPriority(); }
+    std::stable_sort(rules.begin(), rules.end(), ruleless);
+}
+
 static std::vector<css::css_rule> GetBuiltinRules()
 {
-    auto f = http::url("file:///home/miguelrodovia/dev/flower/html.css");
+    std::string path;
+    cfg::GetCanonicalPath("navigator.css.userAgentStylesheet", path);
+
+    auto f = http::url(path);
     auto resp = http::Fetch(f).GetLeft();
 
     css::CCascadingParser cpar(resp->Body, f);
@@ -38,13 +57,15 @@ navigator::document::document(http::url uri, CNavigator* navigator)
     : Url(uri),
       Navigator(navigator)
 {
-    std::vector<css::css_rule> rules = GetBuiltinRules();
-
     auto response = http::Fetch(uri).GetLeft();
-    auto ps = html::CHTMLParser(response->Body, Url);
+    std::vector<css::css_rule> rules = GetBuiltinRules();
+    auto ps = html::CHTMLParser(response->Body, uri);
     auto dom = ps.Parse();
+
+    Url = response->Url;
     Title = ps.GetTitle();
     ps.GetStyleSheetRules(rules);
+    SortRules(rules);
     dom->CreateStyle(rules);
 
     auto layoutn = std::make_shared<draw::layout_document_node>(dom);
@@ -76,19 +97,34 @@ void navigator::document::HandleClick(int x, int y)
     }
     
     if (hitobj.empty()) return;
-    auto clicked = hitobj.back().get()->Node;
+    auto clicked = hitobj.back().get();
     
     while(clicked != nullptr)
     {
-        if (clicked->Type == html::kDomNodeTypeElement
-         && IntoElement(*clicked).Tag == "a"
-         && IntoElement(*clicked).Attributes.contains("href"))
+        if (clicked->Node->Type == html::kDomNodeTypeElement)
         {
-            Navigator->CreateTab(
-                Url.HandleRelative(IntoElement(*clicked).Attributes.at("href")
-            ));
+            if (IntoElementPtr(clicked->Node)->Tag == "a"
+             && IntoElementPtr(clicked->Node)->Attributes.contains("href"))
+            {
+                Navigator->CreateTab(
+                    Url.HandleRelative(IntoElementPtr(clicked->Node)->Attributes.at("href")
+                ));
+                return;
+            }
+
+            std::string inptype;
+            bool hasi = html::GetAttribValue(IntoElementPtr(clicked->Node)->Attributes, "type", inptype);
+            if (IntoElementPtr(clicked->Node)->Tag == "input"
+             && hasi)
+            {
+                auto& dr = clicked->DisplayList.back();
+                dr->ThinkButtonPress(1, x - clicked->Position.X, y - clicked->Position.Y, Navigator);
+            }
+
             return;
         }
+        
+
         clicked = clicked->Parent;
     }
 }
@@ -100,31 +136,37 @@ navigator::CNavigator::CNavigator(cairo_surface_t* surface)
     m_Painter.Surface = surface;
     m_Painter.ScrollOffset = 0;
 
-    http::url uri = std::string("file:///home/miguelrodovia/dev/flower/orig.html");
-    auto tab = navigator::document(uri, this);
-    m_Tabs.push_back(tab);
-
-    m_Chrome = std::make_unique<draw::CChrome>(&m_Tabs, this);
-    m_Painter.TopOffset = m_Chrome->GetPosition().Height;
+    this->CreateTab();
+    m_Painter.TopOffset = 0;
+    if (bool chromeDisplay; 
+        cfg::g_Configuration.lookupValue("navigator.chrome.display", chromeDisplay)
+     && chromeDisplay)
+    {
+        m_Chrome = std::make_unique<draw::CChrome>(&m_Tabs, this);
+        m_Painter.TopOffset = m_Chrome->GetPosition().Height;
+    }
+    
     this->PaintCurrentTab();
 }
 
 void navigator::CNavigator::PaintCurrentTab()
 {
     m_Tabs[m_CurrentTabIndex].Paint(m_Painter);
-    m_Chrome->PaintChrome(m_Painter);
+    if (m_Chrome)
+        m_Chrome->PaintChrome(m_Painter);
 }
 
 void navigator::CNavigator::ThinkMousePress(int x, int y)
 {
-    if (m_Chrome->GetPosition().InsideRect(x, y))
+    auto chrome = m_Chrome ? m_Chrome->GetPosition() : draw::rectangle();
+    if (m_Chrome && chrome.InsideRect(x, y))
     {
         m_Chrome->ThinkClick(x, y);
         return;
     }
 
     /* It must be inside the document. */
-    m_Tabs[m_CurrentTabIndex].HandleClick(x, y - m_Chrome->GetPosition().Height);
+    m_Tabs[m_CurrentTabIndex].HandleClick(x, y - chrome.Height);
 }
 
 void navigator::CNavigator::CreateTab(http::url to)
@@ -134,10 +176,19 @@ void navigator::CNavigator::CreateTab(http::url to)
     this->SetCurrentTab(m_Tabs.size() - 1);
 }
 
+void navigator::CNavigator::CreateTab()
+{
+    std::string ntab;
+    cfg::GetCanonicalPath("navigator.newTabPage", ntab);
+    http::url uri = std::string(ntab);
+    this->CreateTab(uri);
+}
+
 void navigator::CNavigator::SetCurrentTab(size_t index)
 {
     m_CurrentTabIndex = index;
-    m_Chrome->SetSelectedTab(index);
+    if (m_Chrome)
+        m_Chrome->SetSelectedTab(index);
 }
 
 std::vector<navigator::document> 

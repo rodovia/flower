@@ -99,10 +99,16 @@ struct selector_collection
         {
             for (auto& s : Selectors)
             {
-                Priority += s->Priority;
+                if (s->Priority > Priority)
+                    Priority = s->Priority;
             }
         }
 
+        return Priority;
+    }
+
+    constexpr int GetPriority() const
+    {
         return Priority;
     }
 

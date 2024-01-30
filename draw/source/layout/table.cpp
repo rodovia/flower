@@ -1,7 +1,8 @@
-#include "layout_table.h"
+#include "table.h"
 #include "html.h"
 #include "html_node.h"
 #include "layout.h"
+#include <charconv>
 #include <memory>
 
 struct cell
@@ -17,6 +18,26 @@ static void RecursiveLayoutMode(draw::layout_generic_node& node)
     {
         RecursiveLayoutMode(*child);
     }
+}
+
+static void GetRowColumnSpan(std::shared_ptr<html::dom_node> node,
+                             unsigned int& rows, unsigned int& columns)
+{
+    std::string colspanstr,
+                rowspanstr;
+    bool has = html::GetAttribValue(IntoElementPtr(node)->Attributes, "colspan", colspanstr);
+    if (!has) 
+        colspanstr = "1";
+
+    has = html::GetAttribValue(IntoElementPtr(node)->Attributes, "rowspan", colspanstr);
+    if (!has) 
+        rowspanstr = "1";
+
+    std::from_chars(colspanstr.data(), colspanstr.data() + colspanstr.size(), columns);
+    std::clamp(columns, 1U, 1000U);
+
+    std::from_chars(rowspanstr.data(), rowspanstr.data() + rowspanstr.size(), rows);
+    std::clamp(rows, 0U, 65534U);
 }
 
 static void ComputeRowLayout(std::shared_ptr<draw::layout_generic_node> node,
@@ -36,8 +57,10 @@ static void ComputeRowLayout(std::shared_ptr<draw::layout_generic_node> node,
 
     auto hasassign = [&](const cell& c) -> bool 
                      { return currentheight ==  c.Position.Y && currentwidth == c.Position.X; };
-    unsigned int rowspan = 1;
-    unsigned int colspan = 1;
+    unsigned int rowspan;
+    unsigned int colspan;
+    GetRowColumnSpan(node->Node, rowspan, colspan);
+
     for (auto& child : node->Children)
     {
         while (currentwidth < width 
@@ -54,7 +77,7 @@ static void ComputeRowLayout(std::shared_ptr<draw::layout_generic_node> node,
             width = currentwidth + colspan;
         if (height < currentheight + rowspan) 
             height = currentheight + rowspan;
-        cells.emplace_back(draw::rectangle{currentwidth, currentheight, colspan, rowspan},
+        cells.emplace_back(draw::rectangle{width, height, colspan, rowspan},
                            std::static_pointer_cast<draw::layout_block_node>(child));
 
         if (&child == &node->Children.back())
@@ -68,6 +91,9 @@ static void ComputeRowLayout(std::shared_ptr<draw::layout_generic_node> node,
     height = layouth;
     for (auto& ce : cells)
     {
+        std::printf("ce={ h %i, w %i, x %i, y %i }\n", ce.Position.Height, ce.Position.Width, 
+                                                    ce.Position.X, ce.Position.Y);
+        
         ce.Node->Position.X = node->Position.X;
         if (ce.Node->Previous)
             ce.Node->Position.X = (ce.Node->Previous->Position.X - node->Position.X)
@@ -111,8 +137,7 @@ void draw::ComputeTableLayout(layout_block_node& node)
 {
     bool seenCaption = false;
     node.Position.Width = 0;
-    if (node.LayoutMode != kLayoutModeTable 
-     && node.LayoutMode != kLayoutModeNotComputed)
+    if (node.LayoutMode != kLayoutModeTable)
     {
         std::printf("ComputeTableLayout: not a table\n");
         return;
@@ -140,6 +165,7 @@ void draw::ComputeTableLayout(layout_block_node& node)
             if (child->Previous)
             {
                 previoush = child->Previous->Position.Height + child->Previous->Position.Y;
+                std::printf("previoush = %lu\n", previoush);
             }
 
             child->Position.Y += previoush;

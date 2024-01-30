@@ -39,6 +39,7 @@ public:
     void ThinkKeyPress(uint16_t key);
     void SetCurrentTab(size_t index);
     void CreateTab(http::url to);
+    void CreateTab();
     void SetFocus(draw::IDrawable* focus);
     void LoadUntoCurrentTab(http::url to);
     std::vector<document> GetTabs() const;

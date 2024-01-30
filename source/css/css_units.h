@@ -29,6 +29,17 @@ enum css_distance_units : int
     kCssDistanceUnitPixel /*< Reference unit */
 };
 
+enum css_font_size_units : int
+{
+    kCssFontSizeXxSmall = 8,
+    kCssFontSizeXSmall,
+    kCssFontSizeSmall,
+    kCssFontSizeMedium,
+    kCssFontSizeLarge,
+    kCssFontSizeXLarge,
+    kCssFontSizeXxLarge
+};
+
 constexpr float GetValueInReferenceUnits(css_distance_units Du)
 {
     constexpr float pxInCm = 96.0f / 2.54;

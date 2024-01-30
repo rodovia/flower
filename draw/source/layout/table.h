@@ -1,4 +1,4 @@
-/* layout_table.h
+/* table.h
    Purpose: layout computation for kLayoutModeTable display mode */
 #pragma once
 

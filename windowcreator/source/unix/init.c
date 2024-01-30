@@ -125,9 +125,8 @@ void wInitialize()
         exit(1);
     }
 
-    /* The behaviour of passing an empty string to SetLocaleModifiers
-       is implementation-specific. */
-    // XSetLocaleModifiers("");
+    setlocale(LC_ALL, "");
+    char* vl = XSetLocaleModifiers("");
     _wc_globalState = calloc(1, sizeof(_wGlobalState));
     RegisterKeys();
 }

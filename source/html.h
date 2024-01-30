@@ -14,6 +14,8 @@
 
 #define IntoElement(E) static_cast<html::dom_element_node&>(E)
 #define IntoText(E) static_cast<html::dom_text_node&>(E)
+#define IntoElementPtr(E) std::static_pointer_cast<html::dom_element_node>((E))
+#define IntoTextPtr(E) std::static_pointer_cast<html::dom_text_node>((E))
 
 #ifndef __FLOWER_HTML_H
 #define __FLOWER_HTML_H

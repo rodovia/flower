@@ -69,7 +69,7 @@ bool css::class_selector::Matches(const html::dom_element_node& node)
 
 bool css::tag_selector::Matches(const html::dom_element_node& node)
 {
-    return node.Tag == Tag;
+    return node.Tag == Tag || Tag == "*";
 }
 
 css::descendant_selector::descendant_selector(std::string_view select)

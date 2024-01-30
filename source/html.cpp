@@ -230,6 +230,7 @@ void html::CHTMLParser::AddText(std::string text)
 
 void html::CHTMLParser::AddTag(std::string tag)
 {
+    std::printf("tag=%s\n", tag.c_str());
     if (tag.starts_with('/'))
     {
         if (m_Unfinished.size() <= 1) 
@@ -306,7 +307,6 @@ std::string_view html::CHTMLParser::SplitAttributes(html::dom_element_node& node
 
     if (tagidx == std::string_view::npos)
     {
-        std::printf("%s\n", text.data());
         return text;
     }
 

@@ -5,6 +5,7 @@
 
 #include "event.h"
 #include <cstring>
+#include <memory>
 #include <optional>
 #include <type_traits>
 #include <variant>
@@ -79,15 +80,30 @@ struct either
     std::variant<_Ty, _Xy> LeftRight;
 };
 
+template<class _Ty>
+using future_unary_function = void(*)(const _Ty&, void* data);
+
 template<class _Ty, class _Ey = int>
 class CFuture
 {
 public:
+    CFuture()
+        : m_PositiveLambda(nullptr),
+          m_PositiveLambdaData(nullptr)
+    {}
+
+    CFuture(const CFuture&) = default;
+
     /* Maybe add mutexes. */
     constexpr void SetPositiveResult(_Ty& result)
     {
         m_Result.EmplaceSide(result);
         m_Event.Set();
+
+        if (m_PositiveLambda)
+        {
+            m_PositiveLambda(*m_Result.GetLeft(), m_PositiveLambdaData);
+        }
     }
 
     constexpr void SetNegativeResult(_Ey& result)
@@ -102,7 +118,16 @@ public:
         return m_Result;
     }
 
+    constexpr void Then(future_unary_function<_Ty> lambda, void* data = nullptr)
+    {
+        m_PositiveLambda = lambda;
+        m_PositiveLambdaData = data;
+    }
+
 private:
+    future_unary_function<_Ty> m_PositiveLambda;
+    void* m_PositiveLambdaData;
+
     either<_Ty, _Ey> m_Result;
     CEvent m_Event;
 };

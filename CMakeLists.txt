@@ -17,7 +17,14 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
                                                      # the if statement
                         -Wstrict-prototypes # Function declaration without a prototype 
                                             # is deprecated in all versions of C
-                        -Wno-sign-compare)
+                        -Wno-sign-compare
+endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" 
+ OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+    add_compile_options(-fno-rtti)
+
 endif()
 
 
@@ -28,6 +35,7 @@ add_subdirectory(3/frozen)
 add_subdirectory(http)
 add_subdirectory(draw)
 add_subdirectory(windowcreator)
+add_subdirectory(aux/configuration)
 
 if (FLOWER_BUILD_TESTS)
     #add_subdirectory(test/layout)
@@ -35,5 +43,5 @@ endif()
 
 add_executable(flower source/main.cpp source/html.cpp source/css/css.cpp
                     source/css/css_color.cpp source/css/css_selector.cpp)
-target_link_libraries(flower PUBLIC http draw wc frozen::frozen)
+target_link_libraries(flower PUBLIC http draw wc frozen::frozen config)
 

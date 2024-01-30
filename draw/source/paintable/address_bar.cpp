@@ -15,7 +15,7 @@ draw::CAddressBar::CAddressBar(draw::CChrome* chrome, std::string initialtext, c
 
 void draw::CAddressBar::ThinkKeyPress(uint16_t key, const PainterState& ps)
 {
-    if (std::isalpha(key) || std::ispunct(key))
+    if (std::isalnum(key) || std::ispunct(key))
         m_Buffer += key;
     
     if (key == WC_KEY_BACKSPACE)
